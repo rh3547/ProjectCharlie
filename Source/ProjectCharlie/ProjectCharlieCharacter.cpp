@@ -8,6 +8,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "kismet/KismetMathLibrary.h"
+#include "DrawDebugHelpers.h"
+#include "Public/Interactable.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AProjectCharlieCharacter
@@ -43,8 +48,20 @@ AProjectCharlieCharacter::AProjectCharlieCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+	// Create a first person camera
+	FPCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FPCamera"));
+	FName headSocketName = TEXT("FPCameraSocket");
+	FPCamera->SetupAttachment(GetMesh(), headSocketName);
+	FPCamera->bUsePawnControlRotation = true;
+	FPCamera->SetAutoActivate(false);
+
+	FRotator FMCamRot = FRotator(0.0f, 90.0f, -90.0f);
+	FPCamera->SetRelativeRotation(FMCamRot);
+
+	FVector FMCamLoc = FVector(0.0f, 7.0f, 0.0f);
+	FPCamera->SetRelativeLocation(FMCamLoc);
+
+	InteractDistance = 160.0f;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -57,6 +74,9 @@ void AProjectCharlieCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
+	/*
+		Movement input bindings
+	*/
 	PlayerInputComponent->BindAxis("MoveForward", this, &AProjectCharlieCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AProjectCharlieCharacter::MoveRight);
 
@@ -74,6 +94,8 @@ void AProjectCharlieCharacter::SetupPlayerInputComponent(class UInputComponent* 
 
 	// VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AProjectCharlieCharacter::OnResetVR);
+
+	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AProjectCharlieCharacter::Interact);
 }
 
 
@@ -130,5 +152,30 @@ void AProjectCharlieCharacter::MoveRight(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
+	}
+}
+
+void AProjectCharlieCharacter::Interact()
+{
+	FHitResult OutHit;
+	FVector Start = FPCamera->GetComponentLocation();
+	FVector ForwardVector = FPCamera->GetForwardVector();
+	FVector End = ((ForwardVector * InteractDistance) + Start);
+	FCollisionQueryParams CollisionParams;
+
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red, true);
+
+	bool IsHit = GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, CollisionParams);
+
+	if (IsHit)
+	{
+		if (OutHit.bBlockingHit)
+		{
+			IInteractable* InteractableActor = Cast<IInteractable>(OutHit.Actor);
+			if (InteractableActor)
+			{
+				InteractableActor->Execute_OnInteract(Cast<UObject>(InteractableActor));
+			}
+		}
 	}
 }

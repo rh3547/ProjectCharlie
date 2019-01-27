@@ -18,6 +18,9 @@ class AProjectCharlieCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UCameraComponent* FPCamera;
 public:
 	AProjectCharlieCharacter();
 
@@ -28,6 +31,9 @@ public:
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Interaction")
+	float InteractDistance;
 
 protected:
 
@@ -57,6 +63,9 @@ protected:
 
 	/** Handler for when a touch input stops. */
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
+
+	/** Called for world interaction when interact key is pressed */
+	void Interact();
 
 protected:
 	// APawn interface
