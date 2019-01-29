@@ -21,6 +21,10 @@ class AProjectCharlieCharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FPCamera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	class USkeletalMeshComponent* Weapon;
+
 public:
 	AProjectCharlieCharacter();
 
@@ -34,6 +38,12 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Interaction")
 	float InteractDistance;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapons")
+	bool bIsWeaponEquipped;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapons")
+	bool bIsRifleEquipped;
 
 protected:
 
@@ -72,6 +82,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void StopAim();
+
+	UFUNCTION(BlueprintCallable)
+	void EquipWeapon();
 
 protected:
 	// APawn interface

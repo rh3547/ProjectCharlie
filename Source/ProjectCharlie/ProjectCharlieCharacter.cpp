@@ -37,18 +37,18 @@ AProjectCharlieCharacter::AProjectCharlieCharacter()
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
-	// Create a camera boom (pulls in towards the player if there is a collision)
+	// Create the camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
-	// Create a follow camera
+	// Create the follow camera component
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// Create a first person camera
+	// Create the first person camera component
 	FPCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FPCamera"));
 	FName headSocketName = TEXT("FPCameraSocket");
 	FPCamera->SetupAttachment(GetMesh(), headSocketName);
@@ -61,7 +61,15 @@ AProjectCharlieCharacter::AProjectCharlieCharacter()
 	FVector FMCamLoc = FVector(0.0f, 7.0f, 0.0f);
 	FPCamera->SetRelativeLocation(FMCamLoc);
 
+	// Create the weapon skeletal mesh component
+	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
+	Weapon->AttachTo(GetMesh(), TEXT("RightHand"), EAttachLocation::SnapToTargetIncludingScale, true);
+	Weapon->SetVisibility(false);
+
+	// Set initial values
 	InteractDistance = 160.0f;
+	bIsWeaponEquipped = false;
+	bIsRifleEquipped = false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -96,6 +104,7 @@ void AProjectCharlieCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AProjectCharlieCharacter::OnResetVR);
 
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AProjectCharlieCharacter::Interact);
+	PlayerInputComponent->BindAction("EquipWeapon", IE_Pressed, this, &AProjectCharlieCharacter::EquipWeapon);
 }
 
 
@@ -178,6 +187,13 @@ void AProjectCharlieCharacter::Interact()
 			}
 		}
 	}
+}
+
+void AProjectCharlieCharacter::EquipWeapon()
+{
+	bIsWeaponEquipped = !bIsWeaponEquipped;
+	bIsRifleEquipped = !bIsRifleEquipped;
+	Weapon->ToggleVisibility();
 }
 
 void AProjectCharlieCharacter::Aim()
