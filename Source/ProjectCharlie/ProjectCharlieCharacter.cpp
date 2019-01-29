@@ -13,6 +13,7 @@
 #include "kismet/KismetMathLibrary.h"
 #include "DrawDebugHelpers.h"
 #include "Public/Interactable.h"
+#include "Net/UnrealNetwork.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AProjectCharlieCharacter
@@ -62,10 +63,8 @@ AProjectCharlieCharacter::AProjectCharlieCharacter()
 	FPCamera->SetRelativeLocation(FMCamLoc);
 
 	InteractDistance = 160.0f;
+	bIsFirstPerson = true;
 }
-
-//////////////////////////////////////////////////////////////////////////
-// Input
 
 void AProjectCharlieCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
@@ -96,6 +95,7 @@ void AProjectCharlieCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AProjectCharlieCharacter::OnResetVR);
 
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AProjectCharlieCharacter::Interact);
+	PlayerInputComponent->BindAction("ChangeView", IE_Pressed, this, &AProjectCharlieCharacter::ToggleView);
 }
 
 
@@ -185,6 +185,63 @@ void AProjectCharlieCharacter::Aim()
 	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
 }
 
-void AProjectCharlieCharacter::StopAim() {
+void AProjectCharlieCharacter::StopAim()
+{
 	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+}
+
+void AProjectCharlieCharacter::ToggleView()
+{
+	// Loop needed for multiplayer. Iterate over player controllers and get the locally controlled one
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		const APlayerController* PlayerController = It->Get();
+		if (PlayerController && PlayerController->IsLocalController())
+		{
+			APlayerCameraManager* CamManager = PlayerController->PlayerCameraManager;
+			if (CamManager)
+			{
+				CamManager->StartCameraFade(0.0f, 1.0f, 0.1f, FColor::Black);
+
+				if (bIsFirstPerson)
+				{
+					SetThirdPerson();
+					bIsFirstPerson = false;
+				}
+				else
+				{
+					SetFirstPerson();
+					bIsFirstPerson = true;
+				}
+
+				CamManager->StartCameraFade(1.0f, 0.0f, 0.1f, FColor::Black);
+			}
+		}
+	}
+}
+
+void AProjectCharlieCharacter::SetFirstPerson() 
+{
+	FPCamera->SetActive(true);
+	FollowCamera->SetActive(false);
+
+	GetCharacterMovement()->bUseControllerDesiredRotation = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+}
+
+void AProjectCharlieCharacter::SetThirdPerson()
+{
+	CameraBoom->TargetArmLength = 300.0f;
+	FPCamera->SetActive(false, true);
+	FollowCamera->SetActive(true);
+
+	GetCharacterMovement()->bUseControllerDesiredRotation = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+}
+
+void AProjectCharlieCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AProjectCharlieCharacter, bIsFirstPerson);
 }

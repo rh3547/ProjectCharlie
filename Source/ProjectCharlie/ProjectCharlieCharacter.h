@@ -21,6 +21,7 @@ class AProjectCharlieCharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FPCamera;
+
 public:
 	AProjectCharlieCharacter();
 
@@ -34,6 +35,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Interaction")
 	float InteractDistance;
+
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "View")
+	bool bIsFirstPerson;
 
 protected:
 
@@ -73,10 +77,17 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void StopAim();
 
+	UFUNCTION(BlueprintCallable)
+	void ToggleView();
+
+	UFUNCTION(BlueprintCallable)
+	void SetFirstPerson();
+
+	UFUNCTION(BlueprintCallable)
+	void SetThirdPerson();
+
 protected:
-	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	// End of APawn interface
 
 public:
 	/** Returns CameraBoom subobject **/
