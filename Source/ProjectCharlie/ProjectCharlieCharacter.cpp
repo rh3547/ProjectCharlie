@@ -179,3 +179,12 @@ void AProjectCharlieCharacter::Interact()
 		}
 	}
 }
+
+void AProjectCharlieCharacter::Aim()
+{
+	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+}
+
+void AProjectCharlieCharacter::StopAim() {
+	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+}

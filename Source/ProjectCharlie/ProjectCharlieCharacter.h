@@ -67,6 +67,12 @@ protected:
 	/** Called for world interaction when interact key is pressed */
 	void Interact();
 
+	UFUNCTION(BlueprintCallable)
+	void Aim();
+
+	UFUNCTION(BlueprintCallable)
+	void StopAim();
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
