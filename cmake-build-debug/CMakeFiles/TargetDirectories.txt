@@ -1,0 +1,15 @@
+C:/Users/reel2/Documents/Unreal Projects/ProjectCharlie/cmake-build-debug/CMakeFiles/UE4Editor-Win64-DebugGame.dir
+C:/Users/reel2/Documents/Unreal Projects/ProjectCharlie/cmake-build-debug/CMakeFiles/ProjectCharlie-Win64-DebugGame.dir
+C:/Users/reel2/Documents/Unreal Projects/ProjectCharlie/cmake-build-debug/CMakeFiles/UE4Editor-Win64-Shipping.dir
+C:/Users/reel2/Documents/Unreal Projects/ProjectCharlie/cmake-build-debug/CMakeFiles/ProjectCharlie-Win64-Shipping.dir
+C:/Users/reel2/Documents/Unreal Projects/ProjectCharlie/cmake-build-debug/CMakeFiles/UE4Editor.dir
+C:/Users/reel2/Documents/Unreal Projects/ProjectCharlie/cmake-build-debug/CMakeFiles/ProjectCharlie.dir
+C:/Users/reel2/Documents/Unreal Projects/ProjectCharlie/cmake-build-debug/CMakeFiles/ProjectCharlieEditor-Win64-DebugGame.dir
+C:/Users/reel2/Documents/Unreal Projects/ProjectCharlie/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+C:/Users/reel2/Documents/Unreal Projects/ProjectCharlie/cmake-build-debug/CMakeFiles/FakeTarget.dir
+C:/Users/reel2/Documents/Unreal Projects/ProjectCharlie/cmake-build-debug/CMakeFiles/ProjectCharlieEditor.dir
+C:/Users/reel2/Documents/Unreal Projects/ProjectCharlie/cmake-build-debug/CMakeFiles/ProjectCharlieEditor-Win64-Shipping.dir
+C:/Users/reel2/Documents/Unreal Projects/ProjectCharlie/cmake-build-debug/CMakeFiles/UE4Game-Win64-DebugGame.dir
+C:/Users/reel2/Documents/Unreal Projects/ProjectCharlie/cmake-build-debug/CMakeFiles/UE4Game-Win64-Shipping.dir
+C:/Users/reel2/Documents/Unreal Projects/ProjectCharlie/cmake-build-debug/CMakeFiles/UE4Game.dir
+C:/Users/reel2/Documents/Unreal Projects/ProjectCharlie/cmake-build-debug/CMakeFiles/edit_cache.dir

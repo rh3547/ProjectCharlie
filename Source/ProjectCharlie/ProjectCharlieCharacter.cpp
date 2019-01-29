@@ -22,10 +22,6 @@ AProjectCharlieCharacter::AProjectCharlieCharacter()
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
-	// set our turn rates for input
-	BaseTurnRate = 45.f;
-	BaseLookUpRate = 45.f;
-
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -66,8 +62,15 @@ AProjectCharlieCharacter::AProjectCharlieCharacter()
 	Weapon->AttachTo(GetMesh(), TEXT("RightHand"), EAttachLocation::SnapToTargetIncludingScale, true);
 	Weapon->SetVisibility(false);
 
-	// Set initial values
+	// Initialize values
+	BaseWalkSpeed = 400.0f;
+	MaxSprintSpeed = 600.0f;
+	AimWalkSpeed = 300.0f;
+	BaseTurnRate = 45.f;
+	BaseLookUpRate = 45.f;
+
 	InteractDistance = 160.0f;
+
 	bIsWeaponEquipped = false;
 	bIsRifleEquipped = false;
 }
@@ -105,6 +108,8 @@ void AProjectCharlieCharacter::SetupPlayerInputComponent(class UInputComponent* 
 
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AProjectCharlieCharacter::Interact);
 	PlayerInputComponent->BindAction("EquipWeapon", IE_Pressed, this, &AProjectCharlieCharacter::EquipWeapon);
+	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AProjectCharlieCharacter::Aim);
+	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AProjectCharlieCharacter::StopAim);
 }
 
 
@@ -198,9 +203,12 @@ void AProjectCharlieCharacter::EquipWeapon()
 
 void AProjectCharlieCharacter::Aim()
 {
-	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+	GetCharacterMovement()->MaxWalkSpeed = AimWalkSpeed;
+	bIsAiming = true;
 }
 
-void AProjectCharlieCharacter::StopAim() {
-	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+void AProjectCharlieCharacter::StopAim()
+{
+	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+	bIsAiming = false;
 }

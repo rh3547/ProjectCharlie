@@ -28,11 +28,18 @@ class AProjectCharlieCharacter : public ACharacter
 public:
 	AProjectCharlieCharacter();
 
-	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+    float BaseWalkSpeed;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+    float MaxSprintSpeed;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+    float AimWalkSpeed;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
 
-	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
@@ -44,6 +51,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapons")
 	bool bIsRifleEquipped;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapons")
+	bool bIsAiming;
 
 protected:
 
