@@ -24,10 +24,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="04642cab-f8e1-4b12-b89a-8e026ec1095a" name="Default Changelist" comment="">
+<<<<<<< HEAD
+<<<<<<< HEAD
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/FakeTarget.dir/depend.internal.tmp" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/FakeTarget.dir/depend.internal.tmp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/FakeTarget.dir/depend.make.tmp" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/FakeTarget.dir/depend.make.tmp" afterDir="false" />
+=======
+=======
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
       <change beforePath="$PROJECT_DIR$/Config/DefaultInput.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultInput.ini" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_Player.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_Player.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/ProjectCharlie/ProjectCharlieCharacter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ProjectCharlie/ProjectCharlieCharacter.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/ProjectCharlie/ProjectCharlieCharacter.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ProjectCharlie/ProjectCharlieCharacter.h" afterDir="false" />
+<<<<<<< HEAD
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
+=======
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -48,11 +60,43 @@
           </provider>
         </entry>
       </file>
+<<<<<<< HEAD
+<<<<<<< HEAD
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Source/ProjectCharlie/ProjectCharlieCharacter.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="272">
+              <caret line="43" column="79" selection-start-line="43" selection-start-column="18" selection-end-line="43" selection-end-column="79" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Source/ProjectCharlie/Public/InteractableObject.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="255">
+              <caret line="15" column="71" selection-start-line="15" selection-start-column="71" selection-end-line="15" selection-end-column="71" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Source/ProjectCharlie/Private/InteractableObject.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="629">
+              <caret line="37" column="53" lean-forward="true" selection-start-line="37" selection-start-column="53" selection-end-line="37" selection-end-column="53" />
+=======
+=======
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Source/ProjectCharlie/ProjectCharlieCharacter.cpp">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="467">
               <caret line="210" selection-start-line="210" selection-end-line="210" />
+<<<<<<< HEAD
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
+=======
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
             </state>
           </provider>
         </entry>
@@ -67,6 +111,14 @@
       <list>
         <option value="$PROJECT_DIR$/Source/ProjectCharlie/ProjectCharlieCharacter.h" />
         <option value="$PROJECT_DIR$/Source/ProjectCharlie/ProjectCharlieCharacter.cpp" />
+<<<<<<< HEAD
+<<<<<<< HEAD
+        <option value="$PROJECT_DIR$/Source/ProjectCharlie/Public/InteractableObject.h" />
+        <option value="$PROJECT_DIR$/Source/ProjectCharlie/Private/InteractableObject.cpp" />
+=======
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
+=======
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
       </list>
     </option>
   </component>
@@ -81,7 +133,59 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+<<<<<<< HEAD
+<<<<<<< HEAD
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="UE4" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ProjectCharlie" type="47feb1d3:ProjectViewModuleNode" />
+            </path>
+            <path>
+              <item name="UE4" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ProjectCharlie" type="47feb1d3:ProjectViewModuleNode" />
+              <item name="ProjectCharlie" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="UE4" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ProjectCharlie" type="47feb1d3:ProjectViewModuleNode" />
+              <item name="ProjectCharlie" type="462c0819:PsiDirectoryNode" />
+              <item name="Source" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="UE4" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ProjectCharlie" type="47feb1d3:ProjectViewModuleNode" />
+              <item name="ProjectCharlie" type="462c0819:PsiDirectoryNode" />
+              <item name="Source" type="462c0819:PsiDirectoryNode" />
+              <item name="ProjectCharlie" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="UE4" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ProjectCharlie" type="47feb1d3:ProjectViewModuleNode" />
+              <item name="ProjectCharlie" type="462c0819:PsiDirectoryNode" />
+              <item name="Source" type="462c0819:PsiDirectoryNode" />
+              <item name="ProjectCharlie" type="462c0819:PsiDirectoryNode" />
+              <item name="Private" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="UE4" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ProjectCharlie" type="47feb1d3:ProjectViewModuleNode" />
+              <item name="ProjectCharlie" type="462c0819:PsiDirectoryNode" />
+              <item name="Source" type="462c0819:PsiDirectoryNode" />
+              <item name="ProjectCharlie" type="462c0819:PsiDirectoryNode" />
+              <item name="Public" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+=======
       <pane id="ProjectPane" />
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
+=======
+      <pane id="ProjectPane" />
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
       <pane id="Scope" />
     </panes>
   </component>
@@ -194,12 +298,28 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1548804447859</updated>
+<<<<<<< HEAD
+<<<<<<< HEAD
+      <workItem from="1548804454275" duration="4277000" />
+=======
       <workItem from="1548804454275" duration="1242000" />
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
+=======
+      <workItem from="1548804454275" duration="1242000" />
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
+<<<<<<< HEAD
+<<<<<<< HEAD
+    <option name="totallyTimeSpent" value="4277000" />
+=======
     <option name="totallyTimeSpent" value="1242000" />
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
+=======
+    <option name="totallyTimeSpent" value="1242000" />
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
   </component>
   <component name="ToolWindowManager">
     <frame x="1912" y="-8" width="1936" height="1056" extended-state="6" />
@@ -210,7 +330,15 @@
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Database Changes" />
       <window_info anchor="bottom" id="Version Control" />
+<<<<<<< HEAD
+<<<<<<< HEAD
+      <window_info active="true" anchor="bottom" id="Messages" visible="true" weight="0.1332611" />
+=======
       <window_info active="true" anchor="bottom" id="Messages" visible="true" weight="0.276273" />
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
+=======
+      <window_info active="true" anchor="bottom" id="Messages" visible="true" weight="0.276273" />
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
       <window_info anchor="bottom" id="Terminal" />
       <window_info anchor="bottom" id="Event Log" side_tool="true" />
       <window_info anchor="bottom" id="CMake" weight="0.08450704" />
@@ -238,10 +366,37 @@
         </state>
       </provider>
     </entry>
+<<<<<<< HEAD
+<<<<<<< HEAD
+    <entry file="file://$PROJECT_DIR$/Source/ProjectCharlie/Public/InteractableObject.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="15" column="71" selection-start-line="15" selection-start-column="71" selection-end-line="15" selection-end-column="71" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Source/ProjectCharlie/ProjectCharlieCharacter.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="272">
+          <caret line="43" column="79" selection-start-line="43" selection-start-column="18" selection-end-line="43" selection-end-column="79" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Source/ProjectCharlie/Private/InteractableObject.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="629">
+          <caret line="37" column="53" lean-forward="true" selection-start-line="37" selection-start-column="53" selection-end-line="37" selection-end-column="53" />
+=======
+=======
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
     <entry file="file://$PROJECT_DIR$/Source/ProjectCharlie/ProjectCharlieCharacter.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="467">
           <caret line="210" selection-start-line="210" selection-end-line="210" />
+<<<<<<< HEAD
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
+=======
+>>>>>>> 77c011d0d7dce060fd2b11952fa25eb84a080a1c
         </state>
       </provider>
     </entry>

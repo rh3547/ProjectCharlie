@@ -13,7 +13,10 @@ class PROJECTCHARLIE_API AInteractableObject : public AActor, public IInteractab
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(VisibleAnywhere, Category = "Components")
+UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
+    USceneComponent* SceneComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	UStaticMeshComponent* MeshComp;
 
 	// Called when the game starts or when spawned
