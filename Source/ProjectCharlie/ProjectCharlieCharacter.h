@@ -12,48 +12,71 @@ class AProjectCharlieCharacter : public ACharacter
 	GENERATED_BODY()
 
 	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
 	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FPCamera;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	class USkeletalMeshComponent* Weapon;
 
 public:
 	AProjectCharlieCharacter();
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
     float BaseWalkSpeed;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
     float MaxSprintSpeed;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+    float MaxCrouchSpeed;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
     float AimWalkSpeed;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+	bool bIsSprinting;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "View")
 	float BaseTurnRate;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "View")
 	float BaseLookUpRate;
+
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "View")
+	bool bIsFirstPerson;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Interaction")
 	float InteractDistance;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapons")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
 	bool bIsWeaponEquipped;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapons")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
 	bool bIsRifleEquipped;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapons")
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	UAnimSequence* EquipRifleAnimation;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
 	bool bIsAiming;
+
+	bool bDoingSmoothAim;
+
+	bool bDoingSmoothStopAim;
+
+	FTimerHandle TimerHandle_ADS;
+
+	FTimerHandle TimerHandle_StopADS;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	UAnimSequence* FireAnimation;
 
 protected:
 
@@ -93,15 +116,38 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void StopAim();
 
-	UFUNCTION(BlueprintCallable)
+	void ADS();
+
+	void StopADS();
+
 	void EquipWeapon();
 
+    UFUNCTION(BlueprintCallable)
+	void ToggleView();
+
+	UFUNCTION(BlueprintCallable)
+	void SetFirstPerson();
+
+	UFUNCTION(BlueprintCallable)
+	void SetThirdPerson();
+
+	void Sprint();
+
+	void StopSprint();
+
+	UFUNCTION(BlueprintCallable)
+    void ToggleCrouch();
+
+	UFUNCTION(BlueprintCallable)
+	void Fire();
+
 protected:
-	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	// End of APawn interface
 
 public:
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
