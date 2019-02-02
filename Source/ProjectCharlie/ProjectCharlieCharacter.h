@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "ProjectCharlieCharacter.generated.h"
 
+class APCWeaponBase;
+
 UCLASS(config=Game)
 class AProjectCharlieCharacter : public ACharacter
 {
@@ -22,8 +24,10 @@ class AProjectCharlieCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FPCamera;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	class USkeletalMeshComponent* Weapon;
+
+	class USkeletalMeshComponent* CurrentWeaponMesh;
 
 public:
 	AProjectCharlieCharacter();
@@ -78,7 +82,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	UAnimSequence* FireAnimation;
 
+	FVector FPCameraDefaultLocation;
+	FRotator FPCameraDefaultRotation;
+
 protected:
+
+	virtual void BeginPlay() override;
 
 	/** Resets HMD orientation in VR. */
 	void OnResetVR();
@@ -120,6 +129,7 @@ protected:
 
 	void StopADS();
 
+	UFUNCTION(BlueprintCallable)
 	void EquipWeapon();
 
     UFUNCTION(BlueprintCallable)
@@ -140,6 +150,16 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void Fire();
+
+	//Rob's weapon shit
+	APCWeaponBase* CurrentWeapon;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "Weapon")
+	FName WeaponAttachSocketName;
+
+	//TODO For multiple weapon types
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<APCWeaponBase> WeaponClass;
 
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

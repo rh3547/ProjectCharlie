@@ -16,6 +16,7 @@
 #include "Net/UnrealNetwork.h"
 #include "TimerManager.h"
 #include "Animation/AnimInstance.h"
+#include "PCWeaponBase.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AProjectCharlieCharacter
@@ -62,7 +63,7 @@ AProjectCharlieCharacter::AProjectCharlieCharacter()
 	// Create the camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->AttachTo(GetMesh(), TEXT("FPCameraSocket"), EAttachLocation::SnapToTargetIncludingScale, true);
-	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 130.f));
+	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 130.0f));
 	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
@@ -76,14 +77,24 @@ AProjectCharlieCharacter::AProjectCharlieCharacter()
 	FPCamera->SetupAttachment(GetMesh(), TEXT("FPCameraSocket"));
 	FPCamera->bUsePawnControlRotation = true;
 	FPCamera->SetAutoActivate(false);
-	FPCamera->SetRelativeRotation(FRotator(0.0f, 90.0f, -90.0f));
-	FPCamera->SetRelativeLocation(FVector(0.0f, 7.0f, 0.0f));
+
+	FPCameraDefaultLocation = FVector(0.0f, 7.0f, 0.0f);
+	FPCameraDefaultRotation = FRotator(0.0f, 90.0f, -90.0f);
+
+	FPCamera->SetRelativeLocation(FPCameraDefaultLocation);
+	FPCamera->SetRelativeRotation(FPCameraDefaultRotation);
+	
 	FPCamera->SetFieldOfView(95.0f);
 
-	// Create the weapon skeletal mesh component
-	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
-	Weapon->AttachTo(GetMesh(), TEXT("RightHand"), EAttachLocation::SnapToTargetIncludingScale, true);
-	Weapon->SetVisibility(false);
+	// Get the socket to attach the weapon to. -Rob
+	WeaponAttachSocketName = "RightHand"; //"WeaponSocket"
+}
+
+
+void AProjectCharlieCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
 }
 
 void AProjectCharlieCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -262,9 +273,33 @@ void AProjectCharlieCharacter::SetThirdPerson()
 
 void AProjectCharlieCharacter::EquipWeapon()
 {
+
 	bIsWeaponEquipped = !bIsWeaponEquipped;
 	bIsRifleEquipped = !bIsRifleEquipped;
-	Weapon->ToggleVisibility();
+
+	if (bIsWeaponEquipped)
+	{
+		//Spawn A Default Weapon
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		CurrentWeapon = GetWorld()->SpawnActor<APCWeaponBase>(WeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+
+		if (CurrentWeapon)
+		{
+			CurrentWeapon->SetOwner(this);
+			CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
+
+			CurrentWeapon->SetHipTransform();
+
+			CurrentWeaponMesh = CurrentWeapon->GetGunMeshComp();
+		}
+	}
+	else
+	{
+		CurrentWeaponMesh = nullptr;
+		CurrentWeapon->Destroy();
+		
+	}
 
 	if (EquipRifleAnimation)
 	{
@@ -280,28 +315,32 @@ void AProjectCharlieCharacter::EquipWeapon()
 void AProjectCharlieCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
-	// Smooth ADS Weapon Position
-	if (bIsWeaponEquipped && bIsAiming)
+	 //Smooth ADS Weapon Position
+	if (bIsWeaponEquipped && bIsAiming && CurrentWeaponMesh && bDoingSmoothAim)
 	{
-		Weapon->SetRelativeLocation(FMath::VInterpTo(Weapon->RelativeLocation, FVector(-1.136271f, 1.270507f, 0.485004f), DeltaTime, 6.0f));
-		Weapon->SetRelativeRotation(FMath::RInterpTo(Weapon->RelativeRotation, FRotator(-17.552761f, 186.628464f, -5.161056f), DeltaTime, 6.0f));
+		CurrentWeaponMesh->SetRelativeLocation(FMath::VInterpTo(CurrentWeaponMesh->RelativeLocation, CurrentWeapon->GetAimLocation(), DeltaTime, 6.0f));
+		CurrentWeaponMesh->SetRelativeRotation(FMath::RInterpTo(CurrentWeaponMesh->RelativeRotation, CurrentWeapon->GetAimRotation(), DeltaTime, 6.0f));
 	}
-	else if (bIsWeaponEquipped && !bIsAiming)
+	else if (bIsWeaponEquipped && !bIsAiming && CurrentWeaponMesh && bDoingSmoothStopAim)
 	{
-		Weapon->SetRelativeLocation(FMath::VInterpTo(Weapon->RelativeLocation, FVector(-1.479010f, 1.117747f, 0.095322f), DeltaTime, 6.0f));
-		Weapon->SetRelativeRotation(FMath::RInterpTo(Weapon->RelativeRotation, FRotator(-7.215786f, 181.006836f, -0.126218f), DeltaTime, 6.0f));
+		CurrentWeaponMesh->SetRelativeLocation(FMath::VInterpTo(CurrentWeaponMesh->RelativeLocation, CurrentWeapon->GetHipLocation(), DeltaTime, 6.0f));
+		CurrentWeaponMesh->SetRelativeRotation(FMath::RInterpTo(CurrentWeaponMesh->RelativeRotation, CurrentWeapon->GetHipRotation(), DeltaTime, 6.0f));
 	}
 
 	// Smooth ADS Camera Position
 	if (bIsFirstPerson && bIsWeaponEquipped && bIsAiming && bDoingSmoothAim)
 	{
-		FPCamera->SetRelativeLocation(FMath::VInterpTo(FPCamera->RelativeLocation, FVector(0.028555f, -0.885138f, -16.598156f), DeltaTime, 7.0f));
-		FPCamera->SetRelativeRotation(FMath::RInterpTo(FPCamera->RelativeRotation, FRotator(90.000000f, -56.309914f, -146.310089f), DeltaTime, 7.0f));
+		FVector RearSightSocketLocation = CurrentWeaponMesh->GetSocketLocation("RearSight");
+		FVector FrontSightSocketLocation = CurrentWeaponMesh->GetSocketLocation("FrontSight");
+		FRotator ADSRotator = UKismetMathLibrary::FindLookAtRotation(RearSightSocketLocation, FrontSightSocketLocation);
+
+		FPCamera->SetRelativeLocation(FMath::VInterpTo(FPCamera->RelativeLocation, CurrentWeapon->GetADSOffset(), DeltaTime, 7.0f));
+		//FPCamera->SetRelativeRotation(FMath::RInterpTo(FPCamera->RelativeRotation, ADSRotator, DeltaTime, 7.0f));
 	}
 	else if (bIsFirstPerson && bIsWeaponEquipped && !bIsAiming && bDoingSmoothStopAim)
 	{
-		FPCamera->SetRelativeLocation(FMath::VInterpTo(FPCamera->RelativeLocation, FVector(0.0f, 7.0f, 0.0f), DeltaTime, 6.0f));
-		FPCamera->SetRelativeRotation(FMath::RInterpTo(FPCamera->RelativeRotation, FRotator(0.0f, 90.0f, -90.0f), DeltaTime, 6.0f));
+		FPCamera->SetRelativeLocation(FMath::VInterpTo(FPCamera->RelativeLocation, FPCameraDefaultLocation, DeltaTime, 6.0f));
+		FPCamera->SetRelativeRotation(FMath::RInterpTo(FPCamera->RelativeRotation, FPCameraDefaultRotation, DeltaTime, 6.0f));
 	}
 }
 
@@ -318,7 +357,9 @@ void AProjectCharlieCharacter::Aim()
 	bDoingSmoothStopAim = false;
 
 	GetCharacterMovement()->MaxWalkSpeed = AimWalkSpeed;
-	FPCamera->AttachTo(Weapon, TEXT("ADS"), EAttachLocation::KeepWorldPosition);
+
+	FName RearSightName = "RearSight";
+	FPCamera->AttachTo(CurrentWeaponMesh, RearSightName, EAttachLocation::KeepWorldPosition);
 
 	GetWorldTimerManager().ClearTimer(TimerHandle_ADS);
 	GetWorldTimerManager().SetTimer(TimerHandle_ADS, this, &AProjectCharlieCharacter::ADS, 2.0f, false);
@@ -342,7 +383,9 @@ void AProjectCharlieCharacter::StopAim()
 	bDoingSmoothStopAim = true;
 
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
-	FPCamera->AttachTo(GetMesh(), TEXT("head"), EAttachLocation::KeepWorldPosition);
+
+	FName HeadSocketName = "head";
+	FPCamera->AttachTo(GetMesh(), HeadSocketName, EAttachLocation::KeepWorldPosition);
 
 	GetWorldTimerManager().ClearTimer(TimerHandle_StopADS);
 	GetWorldTimerManager().SetTimer(TimerHandle_StopADS, this, &AProjectCharlieCharacter::StopADS, 2.0f, false);
@@ -363,6 +406,12 @@ void AProjectCharlieCharacter::Fire()
 			if (AnimInstance)
 			{
 				AnimInstance->PlaySlotAnimationAsDynamicMontage(FireAnimation, "Shoulders", 0.0f);
+
+				//Rob Addon
+				if (CurrentWeapon)
+				{
+					CurrentWeapon->Fire(); //Call the fire function on the weapon
+				}
 			}
 		}
 	}
