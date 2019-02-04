@@ -32,8 +32,8 @@ AProjectCharlieCharacter::AProjectCharlieCharacter()
 	MaxSprintSpeed = 600.0f;
 	MaxCrouchSpeed = 200.0f;
 	AimWalkSpeed = 250.0f;
-	BaseTurnRate = 45.f;
-	BaseLookUpRate = 45.f;
+	BaseTurnRate = 45.0f;
+	BaseLookUpRate = 45.0f;
 
 	InteractDistance = 160.0f;
 
@@ -44,6 +44,7 @@ AProjectCharlieCharacter::AProjectCharlieCharacter()
 	bDoingSmoothAim = false;
 	bDoingSmoothStopAimWeapon = false;
 	bDoingSmoothStopAimCamera = false;
+	bCanAim = false;
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
@@ -81,13 +82,13 @@ AProjectCharlieCharacter::AProjectCharlieCharacter()
 	FPCamera->bUsePawnControlRotation = true;
 	FPCamera->SetAutoActivate(false);
 
-	FPCameraDefaultLocation = FVector(0.0f, 7.0f, 0.0f);
+	//FPCameraDefaultLocation = FVector(0.0f, 7.0f, 0.0f);
+	FPCameraDefaultLocation = FVector(0.0f, 8.699828f, 0.0f);
 	FPCameraDefaultRotation = FRotator(0.0f, 90.0f, -90.0f);
 
 	FPCamera->SetRelativeLocation(FPCameraDefaultLocation);
 	FPCamera->SetRelativeRotation(FPCameraDefaultRotation);
-	
-	FPCamera->SetFieldOfView(95.0f);
+	FPCamera->SetFieldOfView(90.0f);
 
 	// Get the socket to attach the weapon to. -Rob
 	WeaponAttachSocketName = "RightHand"; //"WeaponSocket"
@@ -278,6 +279,11 @@ void AProjectCharlieCharacter::SetThirdPerson()
 
 void AProjectCharlieCharacter::EquipWeapon()
 {
+	if (bWasJumping || bIsAiming)
+	{
+		return;
+	}
+
 	if (Role != ROLE_Authority)
 	{
 		LocalEquipWeapon();
@@ -325,8 +331,17 @@ void AProjectCharlieCharacter::LocalEquipWeapon()
 		if (AnimInstance)
 		{
 			AnimInstance->PlaySlotAnimationAsDynamicMontage(EquipRifleAnimation, "UpperBody", 0.0f);
+
+			FTimerHandle TimerHandle_EquipWeapon;
+			GetWorldTimerManager().ClearTimer(TimerHandle_EquipWeapon);
+			GetWorldTimerManager().SetTimer(TimerHandle_EquipWeapon, this, &AProjectCharlieCharacter::PostEquipWeapon, false, 1.5f);
 		}
 	}
+}
+
+void AProjectCharlieCharacter::PostEquipWeapon()
+{
+	bCanAim = bIsWeaponEquipped;
 }
 
 void AProjectCharlieCharacter::ServerEquipWeapon_Implementation()
@@ -449,20 +464,22 @@ void AProjectCharlieCharacter::PostStopSmoothAim()
 
 void AProjectCharlieCharacter::Fire()
 {
-	if (bIsWeaponEquipped && bIsAiming)
+	if (!bIsWeaponEquipped || bIsSprinting || bWasJumping)
 	{
-		if (FireAnimation)
-		{
-			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-			if (AnimInstance)
-			{
-				AnimInstance->PlaySlotAnimationAsDynamicMontage(FireAnimation, "Shoulders", 0.0f);
+		return;
+	}
 
-				//Rob Addon
-				if (CurrentWeapon)
-				{
-					CurrentWeapon->Fire(); //Call the fire function on the weapon
-				}
+	if (FireAnimation)
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance)
+		{
+			AnimInstance->PlaySlotAnimationAsDynamicMontage(FireAnimation, "Shoulders", 0.0f);
+
+			//Rob Addon
+			if (CurrentWeapon)
+			{
+				CurrentWeapon->Fire(); //Call the fire function on the weapon
 			}
 		}
 	}
@@ -470,6 +487,11 @@ void AProjectCharlieCharacter::Fire()
 
 void AProjectCharlieCharacter::Sprint()
 {
+	if (bWasJumping || bIsCrouched)
+	{
+		return;
+	}
+
 	GetCharacterMovement()->MaxWalkSpeed = MaxSprintSpeed;
 	bIsSprinting = true;
 }
@@ -482,7 +504,7 @@ void AProjectCharlieCharacter::StopSprint()
 
 void AProjectCharlieCharacter::ToggleCrouch()
 {
-    if (bIsSprinting)
+    if (bIsSprinting || bWasJumping)
     {
         return;
     }
@@ -560,7 +582,8 @@ void AProjectCharlieCharacter::MulticastTestFire_Implementation()
 	}
 }
 
-bool AProjectCharlieCharacter::ServerTestFire_Validate() {
+bool AProjectCharlieCharacter::ServerTestFire_Validate()
+{
 	return true;
 }
 
