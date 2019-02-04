@@ -6,6 +6,7 @@
 #include "Particles/ParticleSystem.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "TimerManager.h"
 
 //Weapon Debug Command
 static int32 DebugWeaponDrawing = 0;
@@ -25,6 +26,15 @@ APCWeaponBase::APCWeaponBase()
 
 	//Make Root the Mesh Component
 	RootComponent = MeshComp;
+
+	AnimInstance = nullptr;
+}
+
+void APCWeaponBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	TimeBetweenShots = 60 / RateOfFire;
 }
 
 USkeletalMeshComponent* APCWeaponBase::GetGunMeshComp()
@@ -35,6 +45,7 @@ USkeletalMeshComponent* APCWeaponBase::GetGunMeshComp()
 void APCWeaponBase::Fire()
 {
 	AActor* MyOwner = GetOwner(); //need to setup in editor PlayerPawn - Set Owner in BP Implementation
+
 	if (MyOwner && ProjectileClass)
 	{
 		FVector EyeLocation;
@@ -48,6 +59,12 @@ void APCWeaponBase::Fire()
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 		GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams); //was #eyerotation
+
+		//Play Fire (Recoil) Animation on the Player's Animation Controller "AnimInstance"
+		if (FireAnimation) 
+		{
+			AnimInstance->PlaySlotAnimationAsDynamicMontage(FireAnimation, "Shoulders", 0.0f);
+		}
 		
 	}
 
@@ -57,6 +74,26 @@ void APCWeaponBase::Fire()
 	}
 
 	PlayFireEffects();
+
+	LastFireTime = GetWorld()->TimeSeconds; //Set the last time we fired our weapon (used for fire rate check)
+}
+
+void APCWeaponBase::StartFire()
+{
+	float FirstDelay = FMath::Max(LastFireTime + TimeBetweenShots - GetWorld()->TimeSeconds, 0.0f); //Clamp to 0+
+
+	//Calls the Fire() function with a delay based on the time last fired (to correspond with fire rate).
+	GetWorldTimerManager().SetTimer(TimerHandle_TimeBetweenShots, this, &APCWeaponBase::Fire, TimeBetweenShots, true, FirstDelay); //Full Auto
+}
+
+void APCWeaponBase::StopFire()
+{
+	GetWorldTimerManager().ClearTimer(TimerHandle_TimeBetweenShots);
+}
+
+void APCWeaponBase::SetPlayerAnimInstance(UAnimInstance* PlayerAnimInstance)
+{
+	AnimInstance = PlayerAnimInstance;
 }
 
 void APCWeaponBase::PlayFireEffects() {

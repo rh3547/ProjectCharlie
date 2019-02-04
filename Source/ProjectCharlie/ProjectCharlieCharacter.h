@@ -81,9 +81,6 @@ public:
 
 	FTimerHandle TimerHandle_StopADS;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	UAnimSequence* FireAnimation;
-
 	FVector FPCameraDefaultLocation;
 
 	FRotator FPCameraDefaultRotation;
@@ -100,6 +97,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "TEMP")
 	TSubclassOf<AActor> FireEffectClass;
+
+	UAnimInstance* AnimInstance; //Used to pass to other things such as the weapon for recoil animation
 
 protected:
 
@@ -175,7 +174,10 @@ protected:
     void ToggleCrouch();
 
 	UFUNCTION(BlueprintCallable)
-	void Fire();
+	void StartFire();
+
+	UFUNCTION(BlueprintCallable)
+	void StopFire();
 
 	// Networking Test Example
 	// ==============================================

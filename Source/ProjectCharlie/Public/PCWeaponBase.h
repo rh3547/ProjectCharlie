@@ -29,12 +29,8 @@ public:
 	APCWeaponBase();
 
 protected:
-	void PlayFireEffects();
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	TArray<EFiremode> FireModes;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon", meta = (ClampMin = "1", ClampMax = "1000000"))
-	uint32 RoundsPerMinute;
+	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USkeletalMeshComponent* MeshComp;
@@ -55,8 +51,18 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<UCameraShake> FireCamShake;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
-	TSubclassOf<AActor> ProjectileClass;
+	void PlayFireEffects();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	TArray<EFiremode> FireModes;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon") //Rate of Fire in Rounds Per Minute
+	float RateOfFire; //Rounds Per Minute
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon") //Set the Player's Recoil Animation
+	UAnimSequence* FireAnimation;
+
+	//UPROPERTY(EditAnywhere, Category = "Weapon", meta = (ClampMin = "1", ClampMax = "1000000"))
+	//uint32 RoundsPerMinute;
 
 	//Gun offsets
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
@@ -74,12 +80,20 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	FVector ADSOffsetVector;
 
-	
+	float LastFireTime; //Private for fire rate
+	float TimeBetweenShots; //Private for fire rate
+
+	//UFUNCTION(BlueprintCallable, Category = "Weapon")
+	virtual void Fire(); //Replaced by "StartFire()". Fire() is not protected
+
+	FTimerHandle TimerHandle_TimeBetweenShots;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
+	TSubclassOf<AActor> ProjectileClass;
+
+	UAnimInstance* AnimInstance; //Player Mesh's Animation Controller - Saved as a Class Variable
 
 public:	
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void Fire();
-	
 	USkeletalMeshComponent* GetGunMeshComp();
 
 	FVector GetHipLocation();
@@ -90,4 +104,9 @@ public:
 
 	void SetHipTransform();
 	void SetAimTransform();
+
+	void SetPlayerAnimInstance(UAnimInstance* PlayerAnimInstance); //Setter for the controlling Player's Animation Controller
+
+	void StartFire();
+	void StopFire();
 };

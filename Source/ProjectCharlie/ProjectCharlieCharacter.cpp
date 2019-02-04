@@ -98,6 +98,9 @@ void AProjectCharlieCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Get the Player's Anim Instance and Set to Class Variable
+	AnimInstance = GetMesh()->GetAnimInstance();
+
 }
 
 void AProjectCharlieCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -140,7 +143,8 @@ void AProjectCharlieCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AProjectCharlieCharacter::Aim);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AProjectCharlieCharacter::StopAim);
 	PlayerInputComponent->BindAction("ChangeView", IE_Pressed, this, &AProjectCharlieCharacter::ToggleView);
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AProjectCharlieCharacter::Fire);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AProjectCharlieCharacter::StartFire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AProjectCharlieCharacter::StopFire);
 
 	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &AProjectCharlieCharacter::TestFire);
 }
@@ -304,6 +308,12 @@ void AProjectCharlieCharacter::LocalEquipWeapon()
 
 		if (CurrentWeapon)
 		{
+			//Pass the Player's Animation Instance to the Weapon (For Recoil Management, etc.)
+			if (AnimInstance)
+			{
+				CurrentWeapon->SetPlayerAnimInstance(AnimInstance);
+			}
+
 			CurrentWeapon->SetOwner(this);
 			CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
 
@@ -321,7 +331,6 @@ void AProjectCharlieCharacter::LocalEquipWeapon()
 
 	if (EquipRifleAnimation)
 	{
-		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		if (AnimInstance)
 		{
 			AnimInstance->PlaySlotAnimationAsDynamicMontage(EquipRifleAnimation, "UpperBody", 0.0f);
@@ -447,24 +456,25 @@ void AProjectCharlieCharacter::PostStopSmoothAim()
 	bDoingSmoothStopAimCamera = false;
 }
 
-void AProjectCharlieCharacter::Fire()
+void AProjectCharlieCharacter::StartFire()
 {
 	if (bIsWeaponEquipped && bIsAiming)
 	{
-		if (FireAnimation)
+		if (AnimInstance)
 		{
-			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-			if (AnimInstance)
+			if (CurrentWeapon)
 			{
-				AnimInstance->PlaySlotAnimationAsDynamicMontage(FireAnimation, "Shoulders", 0.0f);
-
-				//Rob Addon
-				if (CurrentWeapon)
-				{
-					CurrentWeapon->Fire(); //Call the fire function on the weapon
-				}
+				CurrentWeapon->StartFire(); //Call the fire function on the weapon
 			}
 		}
+	}
+}
+
+void AProjectCharlieCharacter::StopFire()
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->StopFire();
 	}
 }
 
