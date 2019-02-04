@@ -44,7 +44,7 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
     float AimWalkSpeed;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
 	bool bIsSprinting;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "View")
@@ -68,12 +68,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	UAnimSequence* EquipRifleAnimation;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
 	bool bIsAiming;
 
 	bool bDoingSmoothAim;
 
-	bool bDoingSmoothStopAim;
+	bool bDoingSmoothStopAimWeapon;
+
+	bool bDoingSmoothStopAimCamera;
 
 	FTimerHandle TimerHandle_ADS;
 
@@ -83,7 +85,21 @@ public:
 	UAnimSequence* FireAnimation;
 
 	FVector FPCameraDefaultLocation;
+
 	FRotator FPCameraDefaultRotation;
+
+	//Rob's weapon shit
+	APCWeaponBase* CurrentWeapon;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "Weapon")
+	FName WeaponAttachSocketName;
+
+	//TODO For multiple weapon types
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<APCWeaponBase> WeaponClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TEMP")
+	TSubclassOf<AActor> FireEffectClass;
 
 protected:
 
@@ -125,12 +141,22 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void StopAim();
 
-	void ADS();
+	void PostSmoothAim();
 
-	void StopADS();
+	void PreStopSmoothAim();
+
+	void PostStopSmoothAim();
 
 	UFUNCTION(BlueprintCallable)
 	void EquipWeapon();
+
+	void LocalEquipWeapon();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerEquipWeapon();
+
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+	void MulticastEquipWeapon();
 
     UFUNCTION(BlueprintCallable)
 	void ToggleView();
@@ -151,15 +177,23 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void Fire();
 
-	//Rob's weapon shit
-	APCWeaponBase* CurrentWeapon;
+	// Networking Test Example
+	// ==============================================
+	void TestFire();
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "Weapon")
-	FName WeaponAttachSocketName;
+	void LocalTestFire();
 
-	//TODO For multiple weapon types
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	TSubclassOf<APCWeaponBase> WeaponClass;
+	UFUNCTION(Server, Unreliable, WithValidation)
+	void ServerTestFire();
+
+	UFUNCTION(NetMulticast, Unreliable, WithValidation)
+	void MulticastTestFire();
+
+	UFUNCTION()
+	void StopTestFire(AActor* Effect);
+
+	// End Networking Test Example
+	// ==============================================
 
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

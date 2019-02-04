@@ -24,6 +24,8 @@
 AProjectCharlieCharacter::AProjectCharlieCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	NetUpdateFrequency = 66.0f;
+	MinNetUpdateFrequency = 33.0f;
 
 	// Initialize values
 	BaseWalkSpeed = 400.0f;
@@ -40,7 +42,8 @@ AProjectCharlieCharacter::AProjectCharlieCharacter()
 	bIsSprinting = false;
 	bIsFirstPerson = false;
 	bDoingSmoothAim = false;
-	bDoingSmoothStopAim = false;
+	bDoingSmoothStopAimWeapon = false;
+	bDoingSmoothStopAimCamera = false;
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
@@ -138,6 +141,8 @@ void AProjectCharlieCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AProjectCharlieCharacter::StopAim);
 	PlayerInputComponent->BindAction("ChangeView", IE_Pressed, this, &AProjectCharlieCharacter::ToggleView);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AProjectCharlieCharacter::Fire);
+
+	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &AProjectCharlieCharacter::TestFire);
 }
 
 
@@ -273,7 +278,20 @@ void AProjectCharlieCharacter::SetThirdPerson()
 
 void AProjectCharlieCharacter::EquipWeapon()
 {
+	if (Role != ROLE_Authority)
+	{
+		LocalEquipWeapon();
+		ServerEquipWeapon();
+	}
+	else if (Role == ROLE_Authority)
+	{
+		LocalEquipWeapon();
+		MulticastEquipWeapon();
+	}
+}
 
+void AProjectCharlieCharacter::LocalEquipWeapon() 
+{
 	bIsWeaponEquipped = !bIsWeaponEquipped;
 	bIsRifleEquipped = !bIsRifleEquipped;
 
@@ -298,7 +316,7 @@ void AProjectCharlieCharacter::EquipWeapon()
 	{
 		CurrentWeaponMesh = nullptr;
 		CurrentWeapon->Destroy();
-		
+
 	}
 
 	if (EquipRifleAnimation)
@@ -311,6 +329,29 @@ void AProjectCharlieCharacter::EquipWeapon()
 	}
 }
 
+void AProjectCharlieCharacter::ServerEquipWeapon_Implementation()
+{
+	MulticastEquipWeapon();
+}
+
+void AProjectCharlieCharacter::MulticastEquipWeapon_Implementation()
+{
+	if (!IsLocallyControlled())
+	{
+		LocalEquipWeapon();
+	}
+}
+
+bool AProjectCharlieCharacter::ServerEquipWeapon_Validate()
+{
+	return true;
+}
+
+bool AProjectCharlieCharacter::MulticastEquipWeapon_Validate()
+{
+	return true;
+}
+
 // Called every frame
 void AProjectCharlieCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
@@ -318,13 +359,13 @@ void AProjectCharlieCharacter::Tick(float DeltaTime) {
 	 //Smooth ADS Weapon Position
 	if (bIsWeaponEquipped && bIsAiming && CurrentWeaponMesh && bDoingSmoothAim)
 	{
-		CurrentWeaponMesh->SetRelativeLocation(FMath::VInterpTo(CurrentWeaponMesh->RelativeLocation, CurrentWeapon->GetAimLocation(), DeltaTime, 6.0f));
-		CurrentWeaponMesh->SetRelativeRotation(FMath::RInterpTo(CurrentWeaponMesh->RelativeRotation, CurrentWeapon->GetAimRotation(), DeltaTime, 6.0f));
+		CurrentWeaponMesh->SetRelativeLocation(FMath::VInterpTo(CurrentWeaponMesh->RelativeLocation, CurrentWeapon->GetAimLocation(), DeltaTime, 11.0f));
+		CurrentWeaponMesh->SetRelativeRotation(FMath::RInterpTo(CurrentWeaponMesh->RelativeRotation, CurrentWeapon->GetAimRotation(), DeltaTime, 11.0f));
 	}
-	else if (bIsWeaponEquipped && !bIsAiming && CurrentWeaponMesh && bDoingSmoothStopAim)
+	else if (bIsWeaponEquipped && !bIsAiming && CurrentWeaponMesh && bDoingSmoothStopAimWeapon)
 	{
-		CurrentWeaponMesh->SetRelativeLocation(FMath::VInterpTo(CurrentWeaponMesh->RelativeLocation, CurrentWeapon->GetHipLocation(), DeltaTime, 6.0f));
-		CurrentWeaponMesh->SetRelativeRotation(FMath::RInterpTo(CurrentWeaponMesh->RelativeRotation, CurrentWeapon->GetHipRotation(), DeltaTime, 6.0f));
+		CurrentWeaponMesh->SetRelativeLocation(FMath::VInterpTo(CurrentWeaponMesh->RelativeLocation, CurrentWeapon->GetHipLocation(), DeltaTime, 5.0f));
+		CurrentWeaponMesh->SetRelativeRotation(FMath::RInterpTo(CurrentWeaponMesh->RelativeRotation, CurrentWeapon->GetHipRotation(), DeltaTime, 5.0f));
 	}
 
 	// Smooth ADS Camera Position
@@ -334,10 +375,10 @@ void AProjectCharlieCharacter::Tick(float DeltaTime) {
 		FVector FrontSightSocketLocation = CurrentWeaponMesh->GetSocketLocation("FrontSight");
 		FRotator ADSRotator = UKismetMathLibrary::FindLookAtRotation(RearSightSocketLocation, FrontSightSocketLocation);
 
-		FPCamera->SetRelativeLocation(FMath::VInterpTo(FPCamera->RelativeLocation, CurrentWeapon->GetADSOffset(), DeltaTime, 7.0f));
+		FPCamera->SetRelativeLocation(FMath::VInterpTo(FPCamera->RelativeLocation, CurrentWeapon->GetADSOffset(), DeltaTime, 6.0f));
 		//FPCamera->SetRelativeRotation(FMath::RInterpTo(FPCamera->RelativeRotation, ADSRotator, DeltaTime, 7.0f));
 	}
-	else if (bIsFirstPerson && bIsWeaponEquipped && !bIsAiming && bDoingSmoothStopAim)
+	else if (bIsFirstPerson && bIsWeaponEquipped && !bIsAiming && bDoingSmoothStopAimCamera)
 	{
 		FPCamera->SetRelativeLocation(FMath::VInterpTo(FPCamera->RelativeLocation, FPCameraDefaultLocation, DeltaTime, 6.0f));
 		FPCamera->SetRelativeRotation(FMath::RInterpTo(FPCamera->RelativeRotation, FPCameraDefaultRotation, DeltaTime, 6.0f));
@@ -354,7 +395,8 @@ void AProjectCharlieCharacter::Aim()
 
 	bIsAiming = true;
 	bDoingSmoothAim = true;
-	bDoingSmoothStopAim = false;
+	bDoingSmoothStopAimWeapon = false;
+	bDoingSmoothStopAimCamera = false;
 
 	GetCharacterMovement()->MaxWalkSpeed = AimWalkSpeed;
 
@@ -362,10 +404,10 @@ void AProjectCharlieCharacter::Aim()
 	FPCamera->AttachTo(CurrentWeaponMesh, RearSightName, EAttachLocation::KeepWorldPosition);
 
 	GetWorldTimerManager().ClearTimer(TimerHandle_ADS);
-	GetWorldTimerManager().SetTimer(TimerHandle_ADS, this, &AProjectCharlieCharacter::ADS, 2.0f, false);
+	GetWorldTimerManager().SetTimer(TimerHandle_ADS, this, &AProjectCharlieCharacter::PostSmoothAim, 2.0f, false);
 }
 
-void AProjectCharlieCharacter::ADS()
+void AProjectCharlieCharacter::PostSmoothAim()
 {
 	bDoingSmoothAim = false;
 }
@@ -380,7 +422,8 @@ void AProjectCharlieCharacter::StopAim()
 
 	bIsAiming = false;
 	bDoingSmoothAim = false;
-	bDoingSmoothStopAim = true;
+	bDoingSmoothStopAimCamera = true;
+	bDoingSmoothStopAimWeapon = true;
 
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 
@@ -388,12 +431,20 @@ void AProjectCharlieCharacter::StopAim()
 	FPCamera->AttachTo(GetMesh(), HeadSocketName, EAttachLocation::KeepWorldPosition);
 
 	GetWorldTimerManager().ClearTimer(TimerHandle_StopADS);
-	GetWorldTimerManager().SetTimer(TimerHandle_StopADS, this, &AProjectCharlieCharacter::StopADS, 2.0f, false);
+	GetWorldTimerManager().SetTimer(TimerHandle_StopADS, this, &AProjectCharlieCharacter::PostStopSmoothAim, 0.5f, false);
 }
 
-void AProjectCharlieCharacter::StopADS()
+void AProjectCharlieCharacter::PreStopSmoothAim()
 {
-	bDoingSmoothStopAim = false;
+	bDoingSmoothStopAimWeapon = true;
+	GetWorldTimerManager().ClearTimer(TimerHandle_StopADS);
+	GetWorldTimerManager().SetTimer(TimerHandle_StopADS, this, &AProjectCharlieCharacter::PostStopSmoothAim, 2.0f, false);
+}
+
+void AProjectCharlieCharacter::PostStopSmoothAim()
+{
+	bDoingSmoothStopAimWeapon = false;
+	bDoingSmoothStopAimCamera = false;
 }
 
 void AProjectCharlieCharacter::Fire()
@@ -446,9 +497,91 @@ void AProjectCharlieCharacter::ToggleCrouch()
     }
 }
 
+// Networking Test Example
+// ==============================================
+
+/*
+	This is the function you should call to initiate the action every time.
+	Don't call the network implementations directly.
+*/
+void AProjectCharlieCharacter::TestFire() 
+{
+	// Only called when initiated from a client
+	if (Role != ROLE_Authority)
+	{
+		LocalTestFire(); // Trigger for self
+		ServerTestFire(); // Tell server that you triggered
+	}
+
+	// Only called when initiated from server
+	else if (Role == ROLE_Authority)
+	{
+		LocalTestFire(); // Trigger for self (on server)
+		MulticastTestFire(); // Tell all clients (and self...) that you triggered
+	}
+}
+
+/*
+	This simply activates the desired client side effects, no networking involved.
+*/
+void AProjectCharlieCharacter::LocalTestFire()
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	AActor* Effect = GetWorld()->SpawnActor<AActor>(FireEffectClass, GetActorLocation(), GetActorRotation(), SpawnParams);
+	Effect->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("pelvis"));
+
+	FTimerHandle TimerHandle_TestFire;
+	FTimerDelegate TimerDel;
+	TimerDel.BindUFunction(this, FName("StopTestFire"), Effect);
+	GetWorldTimerManager().ClearTimer(TimerHandle_TestFire);
+	GetWorldTimerManager().SetTimer(TimerHandle_TestFire, TimerDel, 5.0f, false);
+}
+
+/*
+	Called when the client tells the server it has triggered
+*/
+void AProjectCharlieCharacter::ServerTestFire_Implementation()
+{
+	MulticastTestFire(); // Announce the action to all clients and self
+}
+
+/*
+	Called when the server tells all clients that the action has triggered.
+*/
+void AProjectCharlieCharacter::MulticastTestFire_Implementation()
+{
+	// This ensures the local action is only called if this instance is not locally controlled.
+	// Meaning if you triggered the action yourself and already showed the effects, it will
+	// prevent them from being executed again on yourself
+	if (!IsLocallyControlled())
+	{
+		LocalTestFire();
+	}
+}
+
+bool AProjectCharlieCharacter::ServerTestFire_Validate() {
+	return true;
+}
+
+bool AProjectCharlieCharacter::MulticastTestFire_Validate()
+{
+	return true;
+}
+
+void AProjectCharlieCharacter::StopTestFire(AActor* Effect) 
+{
+	Effect->Destroy();
+}
+
+// End Networking Test Example
+// ==============================================
+
 void AProjectCharlieCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AProjectCharlieCharacter, bIsFirstPerson);
+	DOREPLIFETIME_CONDITION(AProjectCharlieCharacter, bIsFirstPerson, COND_SkipOwner);
+	DOREPLIFETIME_CONDITION(AProjectCharlieCharacter, bIsSprinting, COND_SkipOwner);
+	DOREPLIFETIME_CONDITION(AProjectCharlieCharacter, bIsAiming, COND_SkipOwner);
 }
