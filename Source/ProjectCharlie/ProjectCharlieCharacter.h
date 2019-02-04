@@ -71,6 +71,8 @@ public:
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
 	bool bIsAiming;
 
+	bool bCanAim;
+
 	bool bDoingSmoothAim;
 
 	bool bDoingSmoothStopAimWeapon;
@@ -148,6 +150,8 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void EquipWeapon();
+
+	void PostEquipWeapon();
 
 	void LocalEquipWeapon();
 
