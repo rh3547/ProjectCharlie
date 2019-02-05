@@ -146,6 +146,7 @@ void AProjectCharlieCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAction("ChangeView", IE_Pressed, this, &AProjectCharlieCharacter::ToggleView);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AProjectCharlieCharacter::StartFire);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AProjectCharlieCharacter::StopFire);
+	PlayerInputComponent->BindAction("Firemode", IE_Released, this, &AProjectCharlieCharacter::ChangeFiremode);
 
 	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &AProjectCharlieCharacter::TestFire);
 }
@@ -429,6 +430,13 @@ void AProjectCharlieCharacter::Aim()
 
 	GetWorldTimerManager().ClearTimer(TimerHandle_ADS);
 	GetWorldTimerManager().SetTimer(TimerHandle_ADS, this, &AProjectCharlieCharacter::PostSmoothAim, 2.0f, false);
+}
+
+void AProjectCharlieCharacter::ChangeFiremode()
+{
+	if (CurrentWeapon) {
+		CurrentWeapon->ChangeFiremode();
+	}
 }
 
 void AProjectCharlieCharacter::PostSmoothAim()
