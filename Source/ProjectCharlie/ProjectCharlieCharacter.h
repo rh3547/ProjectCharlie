@@ -139,6 +139,8 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void Aim();
 
+	void ChangeFiremode();
+
 	UFUNCTION(BlueprintCallable)
 	void StopAim();
 

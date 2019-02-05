@@ -55,6 +55,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	TArray<EFiremode> FireModes;
 
+	EFiremode CurrentFireMode;
+
+	int ShotCounter; //Counts how many shots, used for firemodes
+
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon") //Rate of Fire in Rounds Per Minute
 	float RateOfFire; //Rounds Per Minute
 
@@ -109,4 +113,6 @@ public:
 
 	void StartFire();
 	void StopFire();
+
+	void ChangeFiremode();
 };
