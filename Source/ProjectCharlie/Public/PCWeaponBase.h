@@ -9,6 +9,7 @@
 class USkeletalMeshComponent; //forward declare
 class UDamageType;
 class UParticleSystem;
+class USoundCue;
 
 UENUM(BlueprintType)
 enum class EFiremode : uint8
@@ -86,6 +87,11 @@ protected:
 
 	float LastFireTime; //Private for fire rate
 	float TimeBetweenShots; //Private for fire rate
+
+	UAudioComponent* GunAudioComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	USoundCue* FireSound;
 
 	//UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void Fire(); //Replaced by "StartFire()". Fire() is not protected

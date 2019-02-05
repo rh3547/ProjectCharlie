@@ -7,6 +7,8 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "TimerManager.h"
+#include "Sound/SoundCue.h"
+#include "Components/AudioComponent.h"
 
 //Weapon Debug Command
 static int32 DebugWeaponDrawing = 0;
@@ -30,6 +32,11 @@ APCWeaponBase::APCWeaponBase()
 	AnimInstance = nullptr;
 
 	ShotCounter = 0;
+
+	// Create audio componenent for playing weapon sounds
+	GunAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComp"));
+	GunAudioComponent->bAutoActivate = false;
+	GunAudioComponent->AttachTo(MeshComp, MuzzleSocketName);
 }
 
 void APCWeaponBase::BeginPlay()
@@ -46,6 +53,11 @@ void APCWeaponBase::BeginPlay()
 	
 
 	TimeBetweenShots = 60 / RateOfFire;
+
+	if (FireSound->IsValidLowLevelFast())
+	{
+		GunAudioComponent->SetSound(FireSound);
+	}
 }
 
 USkeletalMeshComponent* APCWeaponBase::GetGunMeshComp()
@@ -84,6 +96,10 @@ void APCWeaponBase::Fire()
 				AnimInstance->PlaySlotAnimationAsDynamicMontage(FireAnimation, "Shoulders", 0.0f);
 			}
 
+			if (GunAudioComponent)
+			{
+				GunAudioComponent->Play();
+			}
 		}
 
 		if (DebugWeaponDrawing > 0)
