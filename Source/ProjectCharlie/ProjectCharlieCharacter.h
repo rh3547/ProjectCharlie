@@ -13,11 +13,13 @@ class AProjectCharlieCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	/** Camera boom positioning the camera behind the character */
+	//======================================================================
+	// Components
+	//======================================================================
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
-	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
@@ -32,47 +34,73 @@ class AProjectCharlieCharacter : public ACharacter
 public:
 	AProjectCharlieCharacter();
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+	//======================================================================
+	// Public Variables
+	//======================================================================
+
+	/*
+		Movement/Rotation Variables
+		----------------------------------------------------------------
+	*/
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement")
     float BaseWalkSpeed;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement")
     float MaxSprintSpeed;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement")
     float MaxCrouchSpeed;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement")
     float AimWalkSpeed;
 
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
-	bool bIsSprinting;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "View")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "View")
 	float BaseTurnRate;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "View")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "View")
 	float BaseLookUpRate;
 
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "View")
+	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, Category = "Movement")
+	bool bIsSprinting;
+
+	/*
+		View Variables
+		----------------------------------------------------------------
+	*/
+	FVector FPCameraDefaultLocation;
+
+	FRotator FPCameraDefaultRotation;
+
+	FVector FollowCameraDefaultLocation;
+
+	FRotator FollowCameraDefaultRotation;
+
+	FVector FollowCameraAimLocation;
+
+	FRotator FollowCameraAimRotation;
+
+	float CameraBoomDefaultLength;
+
+	float CameraBoomAimLength;
+
+	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, Category = "View")
 	bool bIsFirstPerson;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Interaction")
-	float InteractDistance;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
+	/*
+		Weapon Variables
+		----------------------------------------------------------------
+	*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapons")
 	bool bIsWeaponEquipped;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapons")
 	bool bIsRifleEquipped;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	UAnimSequence* EquipRifleAnimation;
-
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
-	bool bIsAiming;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapons")
 	bool bCanAim;
+
+	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, Category = "Weapons")
+	bool bIsAiming;
 
 	bool bDoingSmoothAim;
 
@@ -84,33 +112,56 @@ public:
 
 	FTimerHandle TimerHandle_StopADS;
 
-	FVector FPCameraDefaultLocation;
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	UAnimSequence* EquipRifleAnimation;
 
-	FRotator FPCameraDefaultRotation;
-
-	//Rob's weapon shit
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapons")
 	APCWeaponBase* CurrentWeapon;
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	FName WeaponAttachSocketName;
 
-	//TODO For multiple weapon types
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	TSubclassOf<APCWeaponBase> WeaponClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "TEMP")
 	TSubclassOf<AActor> FireEffectClass;
 
-	UAnimInstance* AnimInstance; //Used to pass to other things such as the weapon for recoil animation
+	/*
+		Other Variables
+	*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Interaction")
+	float InteractDistance;
+
+	UAnimInstance* AnimInstance; // Used to pass to other things such as the weapon for recoil animation
 
 protected:
 
+	//======================================================================
+	// Private Functions
+	//======================================================================
+
+	/*
+		Included Functions
+		----------------------------------------------------------------
+	*/
 	virtual void BeginPlay() override;
+
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	/** Resets HMD orientation in VR. */
 	void OnResetVR();
 
+	/** Handler for when a touch input begins. */
+	void TouchStarted(ETouchIndex::Type FingerIndex, FVector Location);
+
+	/** Handler for when a touch input stops. */
+	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
+
+	/*
+		Movement/Rotation Functions
+		----------------------------------------------------------------
+	*/
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
 
@@ -129,26 +180,37 @@ protected:
 	 */
 	void LookUpAtRate(float Rate);
 
-	/** Handler for when a touch input begins. */
-	void TouchStarted(ETouchIndex::Type FingerIndex, FVector Location);
+	void StartSprint();
 
-	/** Handler for when a touch input stops. */
-	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
-
-	/** Called for world interaction when interact key is pressed */
-	void Interact();
+	void StopSprint();
 
 	UFUNCTION(BlueprintCallable)
-	void Aim();
+    void ToggleCrouch();
 
-	void ChangeFiremode();
+	/*
+		View Functions
+		----------------------------------------------------------------
+	*/
+	UFUNCTION(BlueprintCallable)
+	void ToggleView();
+
+	UFUNCTION(BlueprintCallable)
+	void SetFirstPerson();
+
+	UFUNCTION(BlueprintCallable)
+	void SetThirdPerson();
+
+	/*
+		Weapon Functions
+		----------------------------------------------------------------
+	*/
+	UFUNCTION(BlueprintCallable)
+	void Aim();
 
 	UFUNCTION(BlueprintCallable)
 	void StopAim();
 
 	void PostSmoothAim();
-
-	void PreStopSmoothAim();
 
 	void PostStopSmoothAim();
 
@@ -165,21 +227,7 @@ protected:
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 	void MulticastEquipWeapon();
 
-    UFUNCTION(BlueprintCallable)
-	void ToggleView();
-
-	UFUNCTION(BlueprintCallable)
-	void SetFirstPerson();
-
-	UFUNCTION(BlueprintCallable)
-	void SetThirdPerson();
-
-	void Sprint();
-
-	void StopSprint();
-
-	UFUNCTION(BlueprintCallable)
-    void ToggleCrouch();
+	void ChangeFiremode();
 
 	UFUNCTION(BlueprintCallable)
 	void StartFire();
@@ -187,8 +235,14 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void StopFire();
 
+	/*
+		Other Functions
+		----------------------------------------------------------------
+	*/
+	/** Called for world interaction when interact key is pressed */
+	void Interact();
+
 	// Networking Test Example
-	// ==============================================
 	void TestFire();
 
 	void LocalTestFire();
@@ -203,12 +257,13 @@ protected:
 	void StopTestFire(AActor* Effect);
 
 	// End Networking Test Example
-	// ==============================================
-
-protected:
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 public:
+
+	//======================================================================
+	// Public Functions
+	//======================================================================
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

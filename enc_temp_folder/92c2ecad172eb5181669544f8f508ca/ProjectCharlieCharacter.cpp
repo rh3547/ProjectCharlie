@@ -71,7 +71,7 @@ AProjectCharlieCharacter::AProjectCharlieCharacter()
 	FollowCameraDefaultLocation = FVector(0.0f, 0.0f, 0.0f);
 	FollowCameraDefaultRotation = FRotator(0.0f, 0.0f, 0.0f);
 	FollowCameraAimLocation = FVector(58.177422f, 50.657249f, 24.756479f);
-	FollowCameraAimRotation = FRotator(0.0f, 0.0f, -4.554169f);
+	FollowCameraAimRotation = FRotator(-0.103455f, -0.004089f, -4.554169f);
 	CameraBoomDefaultLength = 300.0f;
 	CameraBoomAimLength = 150.0f;
 
@@ -551,15 +551,15 @@ void AProjectCharlieCharacter::Tick(float DeltaTime) {
 
 	if (!bIsFirstPerson && bIsWeaponEquipped && bIsAiming)
 	{
-		FollowCamera->SetRelativeLocation(FMath::VInterpTo(FollowCamera->RelativeLocation, FollowCameraAimLocation, DeltaTime, 4.0f));
-		FollowCamera->SetRelativeRotation(FMath::RInterpTo(FollowCamera->RelativeRotation, FollowCameraAimRotation, DeltaTime, 4.0f));
-		CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, CameraBoomAimLength, DeltaTime, 4.0f);
+		FollowCamera->SetRelativeLocation(FMath::VInterpTo(FollowCamera->RelativeLocation, FollowCameraAimLocation, DeltaTime, 6.0f));
+		FollowCamera->SetRelativeRotation(FMath::RInterpTo(FollowCamera->RelativeRotation, FollowCameraAimRotation, DeltaTime, 6.0f));
+		CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, CameraBoomAimLength, DeltaTime, 6.0f);
 	}
 	else if (!bIsFirstPerson && bIsWeaponEquipped && !bIsAiming)
 	{
-		FollowCamera->SetRelativeLocation(FMath::VInterpTo(FollowCamera->RelativeLocation, FollowCameraDefaultLocation, DeltaTime, 4.0f));
-		FollowCamera->SetRelativeRotation(FMath::RInterpTo(FollowCamera->RelativeRotation, FollowCameraDefaultRotation, DeltaTime, 4.0f));
-		CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, CameraBoomDefaultLength, DeltaTime, 4.0f);
+		FollowCamera->SetRelativeLocation(FMath::VInterpTo(FollowCamera->RelativeLocation, FollowCameraDefaultLocation, DeltaTime, 6.0f));
+		FollowCamera->SetRelativeRotation(FMath::RInterpTo(FollowCamera->RelativeRotation, FollowCameraDefaultRotation, DeltaTime, 6.0f));
+		CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, CameraBoomDefaultLength, DeltaTime, 6.0f);
 	}
 }
 

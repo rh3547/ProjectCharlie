@@ -66,9 +66,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon") //Set the Player's Recoil Animation
 	UAnimSequence* FireAnimation;
 
-	//UPROPERTY(EditAnywhere, Category = "Weapon", meta = (ClampMin = "1", ClampMax = "1000000"))
-	//uint32 RoundsPerMinute;
-
 	//Gun offsets
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	FVector HipLocation;
