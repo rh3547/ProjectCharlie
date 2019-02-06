@@ -53,7 +53,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "View")
 	float BaseLookUpRate;
 
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "View")
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "View")
 	bool bIsFirstPerson;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Interaction")
@@ -71,6 +71,7 @@ public:
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
 	bool bIsAiming;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapons")
 	bool bCanAim;
 
 	bool bDoingSmoothAim;
@@ -88,13 +89,14 @@ public:
 	FRotator FPCameraDefaultRotation;
 
 	//Rob's weapon shit
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapons")
 	APCWeaponBase* CurrentWeapon;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Weapon")
 	FName WeaponAttachSocketName;
 
 	//TODO For multiple weapon types
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	TSubclassOf<APCWeaponBase> WeaponClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "TEMP")

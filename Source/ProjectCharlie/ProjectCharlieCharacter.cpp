@@ -83,7 +83,8 @@ AProjectCharlieCharacter::AProjectCharlieCharacter()
 	FPCamera->SetAutoActivate(false);
 
 	//FPCameraDefaultLocation = FVector(0.0f, 7.0f, 0.0f);
-	FPCameraDefaultLocation = FVector(0.0f, 8.699828f, 0.0f);
+	//FPCameraDefaultLocation = FVector(0.0f, 8.699828f, 0.0f);
+	FPCameraDefaultLocation = FVector(8.193748f, 6.289769f, 0.805958f);
 	FPCameraDefaultRotation = FRotator(0.0f, 90.0f, -90.0f);
 
 	FPCamera->SetRelativeLocation(FPCameraDefaultLocation);
@@ -102,6 +103,9 @@ void AProjectCharlieCharacter::BeginPlay()
 	// Get the Player's Anim Instance and Set to Class Variable
 	AnimInstance = GetMesh()->GetAnimInstance();
 
+	FPCamera->SetRelativeLocation(FPCameraDefaultLocation);
+	FPCamera->SetRelativeRotation(FPCameraDefaultRotation);
+	FPCamera->SetFieldOfView(90.0f);
 }
 
 void AProjectCharlieCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
