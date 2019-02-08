@@ -31,10 +31,10 @@ AProjectCharlieCharacter::AProjectCharlieCharacter()
 	NetUpdateFrequency = 66.0f;
 	MinNetUpdateFrequency = 33.0f;
 
-	BaseWalkSpeed = 400.0f;
-	MaxSprintSpeed = 600.0f;
-	MaxCrouchSpeed = 200.0f;
-	AimWalkSpeed = 250.0f;
+	BaseWalkSpeed = 300.0f;
+	MaxSprintSpeed = 500.0f;
+	MaxCrouchSpeed = 150.0f;
+	AimWalkSpeed = 190.0f;
 	BaseTurnRate = 45.0f;
 	BaseLookUpRate = 45.0f;
 
@@ -48,6 +48,7 @@ AProjectCharlieCharacter::AProjectCharlieCharacter()
 	bDoingSmoothStopAimWeapon = false;
 	bDoingSmoothStopAimCamera = false;
 	bCanAim = false;
+	bIsMeleeEquipped = false;
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
@@ -177,6 +178,9 @@ void AProjectCharlieCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AProjectCharlieCharacter::StartFire);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AProjectCharlieCharacter::StopFire);
 	PlayerInputComponent->BindAction("Firemode", IE_Released, this, &AProjectCharlieCharacter::ChangeFiremode);
+
+	// Melee bindings
+	PlayerInputComponent->BindAction("EquipMelee", IE_Pressed, this, &AProjectCharlieCharacter::EquipMelee);
 
 	// Test for networking, leave for now
 	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &AProjectCharlieCharacter::TestFire);
@@ -443,7 +447,7 @@ void AProjectCharlieCharacter::LocalEquipWeapon()
 		//Spawn A Default Weapon
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		CurrentWeapon = GetWorld()->SpawnActor<APCWeaponBase>(WeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+		CurrentWeapon = GetWorld()->SpawnActor<APCWeaponBase>(PrimaryWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 
 		if (CurrentWeapon)
 		{
@@ -686,6 +690,32 @@ void AProjectCharlieCharacter::StopFire()
 	{
 		CurrentWeapon->StopFire();
 	}
+}
+
+/*
+	EquipMelee
+	======================================================================
+	Toggles melee mode. If no melee weapon is "owned", fists will be
+	used. If the character has a melee weapon, then that weapon will be
+	equipped.
+	======================================================================
+*/
+void AProjectCharlieCharacter::EquipMelee()
+{
+	bIsMeleeEquipped = !bIsMeleeEquipped;
+	bIsWeaponEquipped = false;
+	bIsRifleEquipped = false;
+}
+
+/*
+	MeleeHit
+	======================================================================
+	Perform a melee attack with the current melee weapon, or fists.
+	======================================================================
+*/
+void AProjectCharlieCharacter::MeleeAttack()
+{
+
 }
 
 // Networking Test Example

@@ -89,17 +89,6 @@ void APCWeaponBase::Fire()
 			
 			//Increment ShotCounter by 1
 			ShotCounter++; 
-
-			//Play the Recoil Animation
-			if (FireAnimation)
-			{
-				AnimInstance->PlaySlotAnimationAsDynamicMontage(FireAnimation, "Shoulders", 0.0f);
-			}
-
-			if (GunAudioComponent)
-			{
-				GunAudioComponent->Play();
-			}
 		}
 
 		if (DebugWeaponDrawing > 0)
@@ -158,6 +147,17 @@ void APCWeaponBase::PlayFireEffects() {
 	if (MuzzleEffect) //prevent crash if unassigned
 	{
 		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComp, MuzzleSocketName);
+	}
+
+	//Play the Recoil Animation
+	if (FireAnimation)
+	{
+		AnimInstance->PlaySlotAnimationAsDynamicMontage(FireAnimation, "Shoulders", 0.0f);
+	}
+
+	if (GunAudioComponent)
+	{
+		GunAudioComponent->Play();
 	}
 
 	//Camera Shake

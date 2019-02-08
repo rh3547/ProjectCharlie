@@ -122,18 +122,29 @@ public:
 	FName WeaponAttachSocketName;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	TSubclassOf<APCWeaponBase> WeaponClass;
+	TSubclassOf<APCWeaponBase> PrimaryWeaponClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "TEMP")
-	TSubclassOf<AActor> FireEffectClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	TSubclassOf<APCWeaponBase> SecondaryWeaponClass;
+
+	/*
+		Melee Variables
+		----------------------------------------------------------------
+	*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Melee")
+	bool bIsMeleeEquipped;
 
 	/*
 		Other Variables
+		----------------------------------------------------------------
 	*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Interaction")
 	float InteractDistance;
 
 	UAnimInstance* AnimInstance; // Used to pass to other things such as the weapon for recoil animation
+
+	UPROPERTY(EditDefaultsOnly, Category = "TEMP")
+	TSubclassOf<AActor> FireEffectClass;
 
 protected:
 
@@ -234,6 +245,14 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void StopFire();
+
+	/*
+		Melee Functions
+		----------------------------------------------------------------
+	*/
+	void EquipMelee();
+
+	void MeleeAttack();
 
 	/*
 		Other Functions
