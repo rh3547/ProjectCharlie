@@ -7,6 +7,7 @@
 #include "ProjectCharlieCharacter.generated.h"
 
 class APCWeaponBase;
+class UHealthComponent; //Forward Declare
 
 UCLASS(config=Game)
 class AProjectCharlieCharacter : public ACharacter
@@ -147,6 +148,15 @@ public:
 	TSubclassOf<AActor> FireEffectClass;
 
 protected:
+
+	UHealthComponent* HealthComp;
+
+	UFUNCTION() //HealthComp Stuff
+	void OnHealthChanged(UHealthComponent* HealthComp, float Health, float HealthData, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
+	// Pawn Died Previously
+	UPROPERTY(BlueprintReadOnly, Category = "Player")
+	bool bDied;
 
 	//======================================================================
 	// Private Functions

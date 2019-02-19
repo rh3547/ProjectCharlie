@@ -83,6 +83,7 @@ void APCWeaponBase::Fire()
 			//Spawn Even If Collisions
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			SpawnParams.Instigator = Cast<APawn>(MyOwner);
 
 			//Spawn a Projectile
 			GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams); //was #eyerotation
