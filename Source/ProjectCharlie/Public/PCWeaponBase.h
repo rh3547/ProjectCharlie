@@ -33,14 +33,14 @@ protected:
 
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USkeletalMeshComponent* MeshComp;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	TSubclassOf<UDamageType> DamageType; //Radial, Point, etc
 
 	//MuzzleEffect Stuff
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	FName MuzzleSocketName;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
@@ -81,6 +81,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	FVector ADSOffsetVector;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	FVector MuzzleFlashScale;
 
 	float LastFireTime; //Private for fire rate
 	float TimeBetweenShots; //Private for fire rate
