@@ -5,7 +5,6 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
-#include "../../Public/Components/HealthComponent.h" //Homemade Component
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -109,10 +108,6 @@ AProjectCharlieCharacter::AProjectCharlieCharacter()
 	FPCamera->SetRelativeLocation(FPCameraDefaultLocation);
 	FPCamera->SetRelativeRotation(FPCameraDefaultRotation);
 	FPCamera->SetFieldOfView(90.0f);
-
-	//Create Health Component
-	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
-	bDied = false;
 }
 
 /*
@@ -132,9 +127,6 @@ void AProjectCharlieCharacter::BeginPlay()
 	FPCamera->SetRelativeLocation(FPCameraDefaultLocation);
 	FPCamera->SetRelativeRotation(FPCameraDefaultRotation);
 	FPCamera->SetFieldOfView(90.0f);
-
-	//Add OnHealthChanged Event
-	HealthComp->OnHealthChanged.AddDynamic(this, &AProjectCharlieCharacter::OnHealthChanged);
 }
 
 /*
@@ -725,28 +717,6 @@ void AProjectCharlieCharacter::EquipMelee()
 void AProjectCharlieCharacter::MeleeAttack()
 {
 
-}
-
-/*
-	OnHealthChanged
-	======================================================================
-	Event Triggered When the Player's health changes. Checks for death.
-	======================================================================
-*/
-void AProjectCharlieCharacter::OnHealthChanged(UHealthComponent* HealthComp, float Health, float HealthData, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
-{
-	if (Health <= 0.0f && !bDied)
-	{
-		//Death
-		bDied = true; //Set Dead
-
-		GetMovementComponent()->StopMovementImmediately(); //Stop Movement
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision); //Don't Check for Collisions
-
-		DetachFromControllerPendingDestroy();
-
-		SetLifeSpan(10.0f);
-	}
 }
 
 // Networking Test Example

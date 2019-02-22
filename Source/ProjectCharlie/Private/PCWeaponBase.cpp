@@ -207,3 +207,8 @@ void APCWeaponBase::SetAimTransform()
 {
 	RootComponent->SetRelativeLocationAndRotation(AimLocation, AimRotation);
 }
+
+UAnimSequence* APCWeaponBase::GetEquipAnimation()
+{
+	return EquipAnimation;
+}

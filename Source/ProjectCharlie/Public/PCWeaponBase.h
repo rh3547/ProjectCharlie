@@ -37,9 +37,8 @@ protected:
 	USkeletalMeshComponent* MeshComp;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	TSubclassOf<UDamageType> DamageType; //Radial, Point, etc
+	TSubclassOf<UDamageType> DamageType;
 
-	//MuzzleEffect Stuff
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	FName MuzzleSocketName;
 
@@ -51,6 +50,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<UCameraShake> FireCamShake;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	UAnimSequence* EquipAnimation;
 
 	void PlayFireEffects();
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
@@ -93,12 +95,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	USoundCue* FireSound;
 
-	//UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void Fire(); //Replaced by "StartFire()". Fire() is not protected
+	virtual void Fire(); // Replaced by "StartFire()". Fire() is not protected
 
 	FTimerHandle TimerHandle_TimeBetweenShots;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<AActor> ProjectileClass;
 
 	UAnimInstance* AnimInstance; //Player Mesh's Animation Controller - Saved as a Class Variable
@@ -111,6 +112,8 @@ public:
 	FRotator GetHipRotation();
 	FRotator GetAimRotation();
 	FVector GetADSOffset();
+
+	UAnimSequence* GetEquipAnimation();
 
 	void SetHipTransform();
 	void SetAimTransform();
