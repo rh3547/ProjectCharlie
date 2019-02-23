@@ -24,3 +24,15 @@ void APCProjectileBase::Tick(float DeltaTime)
 
 }
 
+void APCProjectileBase::SetOrigin(FVector Location)
+{
+	Origin = Location;
+}
+
+FVector APCProjectileBase::GetOrigin()
+{
+	return Origin;
+}
+
+
+

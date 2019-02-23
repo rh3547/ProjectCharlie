@@ -15,6 +15,8 @@ public:
 	// Sets default values for this actor's properties
 	APCProjectileBase();
 
+	FVector Origin;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -22,5 +24,10 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	void SetOrigin(FVector Location);
+
+	UFUNCTION(BlueprintCallable)
+	FVector GetOrigin();
 
 };

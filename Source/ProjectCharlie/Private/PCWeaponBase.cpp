@@ -9,6 +9,7 @@
 #include "TimerManager.h"
 #include "Sound/SoundCue.h"
 #include "Components/AudioComponent.h"
+#include "PCProjectileBase.h"
 
 //Weapon Debug Command
 static int32 DebugWeaponDrawing = 0;
@@ -86,7 +87,9 @@ void APCWeaponBase::Fire()
 			SpawnParams.Instigator = Cast<APawn>(MyOwner);
 
 			//Spawn a Projectile
-			GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams); //was #eyerotation
+			AActor* ProjectileActor = GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
+			APCProjectileBase* ProjectileBase = Cast<APCProjectileBase>(ProjectileActor);
+			ProjectileBase->SetOrigin(MeshComp->GetSocketLocation(MuzzleSocketName));
 			
 			//Increment ShotCounter by 1
 			ShotCounter++; 
