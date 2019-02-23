@@ -259,14 +259,14 @@ void APCCharacter::EquipWeapon()
 			AnimInstance->PlaySlotAnimationAsDynamicMontage(CurrentWeapon->GetEquipAnimation(), "UpperBody", 0.0f);
 		}
 
-		FTimerHandle TimerHandle_EquipWeapon;
 		GetWorldTimerManager().ClearTimer(TimerHandle_EquipWeapon);
-		GetWorldTimerManager().SetTimer(TimerHandle_EquipWeapon, this, &APCCharacter::PostEquipWeapon, false, 1.5f);
+		GetWorldTimerManager().SetTimer(TimerHandle_EquipWeapon, this, &APCCharacter::PostEquipWeapon, 1.5f, false);
 	}
 }
 
 // Called with some delay after equipping/unequipping a weapon.
-void APCCharacter::PostEquipWeapon() {
+void APCCharacter::PostEquipWeapon()
+{
 	bCanAim = true;
 }
 
@@ -348,7 +348,7 @@ void APCCharacter::StopAim()
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 
 	GetWorldTimerManager().ClearTimer(TimerHandle_StopADS);
-	GetWorldTimerManager().SetTimer(TimerHandle_StopADS, this, &APCCharacter::PostStopSmoothAim, 0.5f, false);
+	GetWorldTimerManager().SetTimer(TimerHandle_StopADS, this, &APCCharacter::PostStopSmoothAim, 2.0f, false);
 }
 
 // Called with some delay after smooth "un-aim"

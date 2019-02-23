@@ -67,6 +67,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	bool bCanAim;
 
+	FTimerHandle TimerHandle_EquipWeapon;
+
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	bool bIsAiming;
 
