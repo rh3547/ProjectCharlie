@@ -13,5 +13,8 @@ UCLASS()
 class PROJECTCHARLIE_API APCNPC : public APCCharacter
 {
 	GENERATED_BODY()
+
+public:
+	virtual void BeginPlay() override;
 	
 };

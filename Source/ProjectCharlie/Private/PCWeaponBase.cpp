@@ -141,6 +141,11 @@ void APCWeaponBase::ChangeFiremode()
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("This is an on screen message!"));
 }
 
+TArray<EFiremode> APCWeaponBase::GetFireModes()
+{
+	return FireModes;
+}
+
 void APCWeaponBase::SetPlayerAnimInstance(UAnimInstance* PlayerAnimInstance)
 {
 	AnimInstance = PlayerAnimInstance;

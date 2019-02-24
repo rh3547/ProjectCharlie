@@ -55,9 +55,11 @@ protected:
 	UAnimSequence* EquipAnimation;
 
 	void PlayFireEffects();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	TArray<EFiremode> FireModes;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	EFiremode CurrentFireMode;
 
 	int ShotCounter; //Counts how many shots, used for firemodes
@@ -124,4 +126,5 @@ public:
 	void StopFire();
 
 	void ChangeFiremode();
+	TArray<EFiremode> GetFireModes();
 };

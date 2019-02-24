@@ -2,3 +2,7 @@
 
 #include "PCNPC.h"
 
+void APCNPC::BeginPlay()
+{
+	Super::BeginPlay();
+}

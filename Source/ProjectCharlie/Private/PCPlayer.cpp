@@ -140,7 +140,7 @@ void APCPlayer::SetupPlayerInputComponent(class UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &APCPlayer::Interact);
 
 	// Weapon bindings
-	PlayerInputComponent->BindAction("EquipWeapon", IE_Pressed, this, &APCPlayer::ToggleEquipWeapon);
+	//PlayerInputComponent->BindAction("EquipWeapon", IE_Pressed, this, &APCPlayer::ToggleEquipWeapon);
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &APCPlayer::StartAim);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &APCPlayer::StopAim);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APCPlayer::StartFire);

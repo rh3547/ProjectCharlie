@@ -26,7 +26,7 @@ public:
 	//======================================================================
 
 	/*
-		Status Variables
+		Health/State Variables
 		----------------------------------------------------------------
 	*/
 	UPROPERTY(BlueprintReadWrite, Category = "Health")
