@@ -36,6 +36,7 @@ APCPlayer::APCPlayer()
 
 	bIsFirstPerson = false;
 	bDoingSmoothStopAimCamera = false;
+	bAimLock = false;
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -97,6 +98,41 @@ void APCPlayer::BeginPlay()
 }
 
 /*
+	Tick
+	======================================================================
+	Called every game tick.
+	Currently used for smooth transitions, etc.
+	======================================================================
+*/
+void APCPlayer::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	// Smooth ADS Camera Position
+	if (bIsFirstPerson && bIsWeaponEquipped && bIsAiming && bDoingSmoothAim)
+	{
+		FPCamera->SetRelativeLocation(FMath::VInterpTo(FPCamera->RelativeLocation, CurrentWeapon->GetADSOffset(), DeltaTime, 6.0f));
+	}
+	else if (bIsFirstPerson && bIsWeaponEquipped && !bIsAiming && bDoingSmoothStopAimCamera)
+	{
+		FPCamera->SetRelativeLocation(FMath::VInterpTo(FPCamera->RelativeLocation, FPCameraDefaultLocation, DeltaTime, 6.0f));
+	}
+
+	if (!bIsFirstPerson && bIsWeaponEquipped && bIsAiming)
+	{
+		FollowCamera->SetRelativeLocation(FMath::VInterpTo(FollowCamera->RelativeLocation, FollowCameraAimLocation, DeltaTime, 4.0f));
+		FollowCamera->SetRelativeRotation(FMath::RInterpTo(FollowCamera->RelativeRotation, FollowCameraAimRotation, DeltaTime, 4.0f));
+		CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, CameraBoomAimLength, DeltaTime, 4.0f);
+	}
+	else if (!bIsFirstPerson && bIsWeaponEquipped && !bIsAiming)
+	{
+		FollowCamera->SetRelativeLocation(FMath::VInterpTo(FollowCamera->RelativeLocation, FollowCameraDefaultLocation, DeltaTime, 4.0f));
+		FollowCamera->SetRelativeRotation(FMath::RInterpTo(FollowCamera->RelativeRotation, FollowCameraDefaultRotation, DeltaTime, 4.0f));
+		CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, CameraBoomDefaultLength, DeltaTime, 4.0f);
+	}
+}
+
+/*
 	SetupPlayerInputComponent
 	======================================================================
 	Setup the input component to bind input actions to functions.
@@ -138,6 +174,12 @@ void APCPlayer::SetupPlayerInputComponent(class UInputComponent* PlayerInputComp
 	*/
 	PlayerInputComponent->BindAction("ChangeView", IE_Pressed, this, &APCPlayer::ToggleView);
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &APCPlayer::Interact);
+	PlayerInputComponent->BindAction("LeanLeft", IE_Pressed, this, &APCPlayer::LeanLeft);
+	PlayerInputComponent->BindAction("LeanLeft", IE_Released, this, &APCPlayer::LeanLeft);
+	PlayerInputComponent->BindAction("LeanRight", IE_Pressed, this, &APCPlayer::LeanRight);
+	PlayerInputComponent->BindAction("LeanRight", IE_Released, this, &APCPlayer::LeanRight);
+	PlayerInputComponent->BindAction("Peak", IE_Pressed, this, &APCPlayer::Peak);
+	PlayerInputComponent->BindAction("Peak", IE_Released, this, &APCPlayer::Peak);
 
 	// Weapon bindings
 	PlayerInputComponent->BindAction("EquipWeapon", IE_Pressed, this, &APCPlayer::ToggleEquipWeapon);
@@ -292,40 +334,6 @@ void APCPlayer::SetThirdPerson()
 }
 
 /*
-	Tick
-	======================================================================
-	Called every game tick.
-	Currently used for smooth transitions for aiming, etc.
-	======================================================================
-*/
-void APCPlayer::Tick(float DeltaTime) {
-	Super::Tick(DeltaTime);
-
-	// Smooth ADS Camera Position
-	if (bIsFirstPerson && bIsWeaponEquipped && bIsAiming && bDoingSmoothAim)
-	{
-		FPCamera->SetRelativeLocation(FMath::VInterpTo(FPCamera->RelativeLocation, CurrentWeapon->GetADSOffset(), DeltaTime, 6.0f));
-	}
-	else if (bIsFirstPerson && bIsWeaponEquipped && !bIsAiming && bDoingSmoothStopAimCamera)
-	{
-		FPCamera->SetRelativeLocation(FMath::VInterpTo(FPCamera->RelativeLocation, FPCameraDefaultLocation, DeltaTime, 6.0f));
-	}
-
-	if (!bIsFirstPerson && bIsWeaponEquipped && bIsAiming)
-	{
-		FollowCamera->SetRelativeLocation(FMath::VInterpTo(FollowCamera->RelativeLocation, FollowCameraAimLocation, DeltaTime, 4.0f));
-		FollowCamera->SetRelativeRotation(FMath::RInterpTo(FollowCamera->RelativeRotation, FollowCameraAimRotation, DeltaTime, 4.0f));
-		CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, CameraBoomAimLength, DeltaTime, 4.0f);
-	}
-	else if (!bIsFirstPerson && bIsWeaponEquipped && !bIsAiming)
-	{
-		FollowCamera->SetRelativeLocation(FMath::VInterpTo(FollowCamera->RelativeLocation, FollowCameraDefaultLocation, DeltaTime, 4.0f));
-		FollowCamera->SetRelativeRotation(FMath::RInterpTo(FollowCamera->RelativeRotation, FollowCameraDefaultRotation, DeltaTime, 4.0f));
-		CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, CameraBoomDefaultLength, DeltaTime, 4.0f);
-	}
-}
-
-/*
 	Aim
 	======================================================================
 	Aim down the sights of the current gun.
@@ -366,18 +374,21 @@ void APCPlayer::PostSmoothAim()
 */
 void APCPlayer::StopAim()
 {
-	Super::StopAim();
-
-	bDoingSmoothStopAimCamera = true;
-
-	if (!bIsFirstPerson)
+	if (!bAimLock)
 	{
-		GetCharacterMovement()->bUseControllerDesiredRotation = false;
-		GetCharacterMovement()->bOrientRotationToMovement = true;
-	}
+		Super::StopAim();
 
-	FName HeadSocketName = "head";
-	FPCamera->AttachTo(GetMesh(), HeadSocketName, EAttachLocation::KeepWorldPosition);
+		bDoingSmoothStopAimCamera = true;
+
+		if (!bIsFirstPerson)
+		{
+			GetCharacterMovement()->bUseControllerDesiredRotation = false;
+			GetCharacterMovement()->bOrientRotationToMovement = true;
+		}
+
+		FName HeadSocketName = "head";
+		FPCamera->AttachTo(GetMesh(), HeadSocketName, EAttachLocation::KeepWorldPosition);
+	}
 }
 
 // Called with some delay after smooth "un-aim"

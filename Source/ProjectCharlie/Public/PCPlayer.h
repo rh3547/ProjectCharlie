@@ -24,7 +24,7 @@ class PROJECTCHARLIE_API APCPlayer : public APCCharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FPCamera;
 
 public:
@@ -87,6 +87,13 @@ public:
 	*/
 	UPROPERTY(EditDefaultsOnly, Category = "TEMP")
 	TSubclassOf<AActor> FireEffectClass;
+
+	/*
+		Debug Variables
+		----------------------------------------------------------------
+	*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Debug")
+	bool bAimLock;
 
 protected:
 

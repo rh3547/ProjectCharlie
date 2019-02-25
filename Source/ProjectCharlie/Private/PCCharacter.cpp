@@ -27,12 +27,6 @@ APCCharacter::APCCharacter()
 	NetUpdateFrequency = 30.0f;
 	MinNetUpdateFrequency = 15.0f;
 
-	/*BaseWalkSpeed = 300.0f;
-	MaxSprintSpeed = 500.0f;
-	MaxCrouchSpeed = 150.0f;
-	AimWalkSpeed = 190.0f;
-	InteractDistance = 160.0f;*/
-
 	bIsWeaponEquipped = false;
 	bIsRifleEquipped = false;
 	bIsSprinting = false;
@@ -41,6 +35,11 @@ APCCharacter::APCCharacter()
 	bCanAim = false;
 	bIsMeleeEquipped = false;
 	bIsDead = false;
+	bIsLeaningLeft = false;
+	bIsLeaningRight = false;
+	bIsPeaking = false;
+	LeanAmount = 0;
+	PeakAmount = 0;
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
@@ -76,6 +75,36 @@ void APCCharacter::BeginPlay()
 	
 	// Get the Player's Anim Instance and Set to Class Variable
 	AnimInstance = GetMesh()->GetAnimInstance();
+
+	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeedCrouched = MaxCrouchSpeed;
+}
+
+/*
+	Tick
+	======================================================================
+	Called every game tick.
+	Currently used for smooth transitions.
+	======================================================================
+*/
+void APCCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	// Smooth ADS Weapon Position
+	if (bIsWeaponEquipped && bIsAiming && CurrentWeaponMesh && bDoingSmoothAim)
+	{
+		CurrentWeaponMesh->SetRelativeLocation(FMath::VInterpTo(CurrentWeaponMesh->RelativeLocation, CurrentWeapon->GetAimLocation(), DeltaTime, 11.0f));
+		CurrentWeaponMesh->SetRelativeRotation(FMath::RInterpTo(CurrentWeaponMesh->RelativeRotation, CurrentWeapon->GetAimRotation(), DeltaTime, 11.0f));
+	}
+	else if (bIsWeaponEquipped && !bIsAiming && CurrentWeaponMesh && bDoingSmoothStopAimWeapon)
+	{
+		CurrentWeaponMesh->SetRelativeLocation(FMath::VInterpTo(CurrentWeaponMesh->RelativeLocation, CurrentWeapon->GetHipLocation(), DeltaTime, 5.0f));
+		CurrentWeaponMesh->SetRelativeRotation(FMath::RInterpTo(CurrentWeaponMesh->RelativeRotation, CurrentWeapon->GetHipRotation(), DeltaTime, 5.0f));
+	}
+
+	LeanAmount = FMath::FInterpTo(LeanAmount, GetLeanAmount(), DeltaTime, 5.0f);
+	PeakAmount = FMath::FInterpTo(PeakAmount, GetPeakAmount(), DeltaTime, 5.0f);
 }
 
 /*
@@ -128,6 +157,86 @@ void APCCharacter::ToggleCrouch()
 	else
 	{
 		UnCrouch();
+	}
+}
+
+/*
+	LeanLeft
+	======================================================================
+	Lean to the left. This is a toggle function, call again to stop
+	leaning.
+	======================================================================
+*/
+void APCCharacter::LeanLeft()
+{
+	bIsLeaningLeft = !bIsLeaningLeft;
+}
+
+/*
+	LeanRight
+	======================================================================
+	Lean to the right. This is a toggle function, call again to stop
+	leaning.
+	======================================================================
+*/
+void APCCharacter::LeanRight()
+{
+	bIsLeaningRight = !bIsLeaningRight;
+}
+
+/*
+	GetLeanAmount
+	======================================================================
+	Get the value to lean based on lean flags.
+	======================================================================
+*/
+float APCCharacter::GetLeanAmount()
+{
+	if (bIsLeaningRight && bIsLeaningLeft)
+	{
+		return 0;
+	}
+	else if (bIsLeaningRight)
+	{
+		return MaxLean;
+	}
+	else if (bIsLeaningLeft)
+	{
+		return MaxLean * -1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+	Peak
+	======================================================================
+	Peak upwards. This is a toggle function, call again to stop
+	peaking.
+	======================================================================
+*/
+void APCCharacter::Peak()
+{
+	bIsPeaking = !bIsPeaking;
+}
+
+/*
+	GetPeakAmount
+	======================================================================
+	Get the value to peak based on peak flags.
+	======================================================================
+*/
+float APCCharacter::GetPeakAmount()
+{
+	if (bIsPeaking)
+	{
+		return MaxPeak;
+	}
+	else
+	{
+		return 0;
 	}
 }
 
@@ -281,30 +390,6 @@ void APCCharacter::UnequipWeapon()
 }
 
 /*
-	Tick
-	======================================================================
-	Called every game tick.
-	Currently used for smooth transitions for aiming, etc.
-	======================================================================
-*/
-void APCCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	// Smooth ADS Weapon Position
-	if (bIsWeaponEquipped && bIsAiming && CurrentWeaponMesh && bDoingSmoothAim)
-	{
-		CurrentWeaponMesh->SetRelativeLocation(FMath::VInterpTo(CurrentWeaponMesh->RelativeLocation, CurrentWeapon->GetAimLocation(), DeltaTime, 11.0f));
-		CurrentWeaponMesh->SetRelativeRotation(FMath::RInterpTo(CurrentWeaponMesh->RelativeRotation, CurrentWeapon->GetAimRotation(), DeltaTime, 11.0f));
-	}
-	else if (bIsWeaponEquipped && !bIsAiming && CurrentWeaponMesh && bDoingSmoothStopAimWeapon)
-	{
-		CurrentWeaponMesh->SetRelativeLocation(FMath::VInterpTo(CurrentWeaponMesh->RelativeLocation, CurrentWeapon->GetHipLocation(), DeltaTime, 5.0f));
-		CurrentWeaponMesh->SetRelativeRotation(FMath::RInterpTo(CurrentWeaponMesh->RelativeRotation, CurrentWeapon->GetHipRotation(), DeltaTime, 5.0f));
-	}
-}
-
-/*
 	Aim
 	======================================================================
 	Aim down the sights of the current gun.
@@ -312,7 +397,7 @@ void APCCharacter::Tick(float DeltaTime)
 */
 void APCCharacter::StartAim()
 {
-	if (bIsSprinting || !bCanAim)
+	if (bIsSprinting || !bCanAim || bWasJumping)
 	{
 		return;
 	}
@@ -320,7 +405,8 @@ void APCCharacter::StartAim()
 	bIsAiming = true;
 	bDoingSmoothAim = true;
 	bDoingSmoothStopAimWeapon = false;
-
+	
+	GetCharacterMovement()->SetJumpAllowed(false);
 	GetCharacterMovement()->MaxWalkSpeed = AimWalkSpeed;
 
 	GetWorldTimerManager().ClearTimer(TimerHandle_ADS);
@@ -345,6 +431,7 @@ void APCCharacter::StopAim()
 	bDoingSmoothAim = false;
 	bDoingSmoothStopAimWeapon = true;
 
+	GetCharacterMovement()->SetJumpAllowed(true);
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 
 	GetWorldTimerManager().ClearTimer(TimerHandle_StopADS);

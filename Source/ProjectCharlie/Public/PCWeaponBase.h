@@ -20,6 +20,18 @@ enum class EFiremode : uint8
 	FULLY_SEMI_AUTO UMETA(DisplayName = "Daddy Mode")
 };
 
+/*
+	Used for animation movement state tracking, not for reload/equip/fire animations.
+*/
+UENUM(BlueprintType)
+enum class EWeaponType : uint8
+{
+	LONG_GUN UMETA(DisplayName = "Long Gun"),
+	LONG_GUN_PISTOL_GRIP UMETA(DisplayName = "Long Gun - Pistol Grip"),
+	PISTOL UMETA(DisplayName = "Pistol"),
+	LEVER_ACTION UMETA(DisplayName = "Lever Action")
+};
+
 UCLASS()
 class PROJECTCHARLIE_API APCWeaponBase : public AActor
 {
@@ -55,6 +67,7 @@ protected:
 	UAnimSequence* EquipAnimation;
 
 	void PlayFireEffects();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	TArray<EFiremode> FireModes;
 
@@ -103,6 +116,9 @@ protected:
 	TSubclassOf<AActor> ProjectileClass;
 
 	UAnimInstance* AnimInstance; //Player Mesh's Animation Controller - Saved as a Class Variable
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	EWeaponType WeaponType;
 
 public:	
 	USkeletalMeshComponent* GetGunMeshComp();

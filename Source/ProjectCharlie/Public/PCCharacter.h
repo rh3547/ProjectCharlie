@@ -15,9 +15,6 @@ class PROJECTCHARLIE_API APCCharacter : public ACharacter
 
 public:
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* CurrentWeaponMesh;
-
 	// Sets default values for this character's properties
 	APCCharacter();
 
@@ -39,20 +36,41 @@ public:
 		Movement/Rotation Variables
 		----------------------------------------------------------------
 	*/
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float BaseWalkSpeed;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float MaxSprintSpeed;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float MaxCrouchSpeed;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     float AimWalkSpeed;
 
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
 	bool bIsSprinting;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	bool bIsLeaningLeft;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	bool bIsLeaningRight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float LeanAmount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float MaxLean;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	bool bIsPeaking;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float PeakAmount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float MaxPeak;
 
 	/*
 		Weapon Variables
@@ -82,6 +100,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	APCWeaponBase* CurrentWeapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	USkeletalMeshComponent* CurrentWeaponMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	FName WeaponAttachSocketName;
@@ -132,6 +153,21 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ToggleCrouch();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void LeanLeft();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void LeanRight();
+
+	UFUNCTION(BlueprintCallable)
+	float GetLeanAmount();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void Peak();
+
+	UFUNCTION(BlueprintCallable)
+	float GetPeakAmount();
 
 	/*
 		Weapon Functions
