@@ -43,7 +43,7 @@ APCPlayer::APCPlayer()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	FPCameraDefaultLocation = FVector(8.193748f, 6.289769f, 0.805958f);
+	//FPCameraDefaultLocation = FVector(6.193748f, 4.289769f, 0.805958f);
 	FPCameraDefaultRotation = FRotator(0.0f, 90.0f, -90.0f);
 
 	FollowCameraDefaultLocation = FVector(0.0f, 0.0f, 0.0f);
@@ -78,7 +78,6 @@ APCPlayer::APCPlayer()
 
 	FPCamera->SetRelativeLocation(FPCameraDefaultLocation);
 	FPCamera->SetRelativeRotation(FPCameraDefaultRotation);
-	FPCamera->SetFieldOfView(90.0f);
 }
 
 /*
@@ -94,7 +93,7 @@ void APCPlayer::BeginPlay()
 
 	FPCamera->SetRelativeLocation(FPCameraDefaultLocation);
 	FPCamera->SetRelativeRotation(FPCameraDefaultRotation);
-	FPCamera->SetFieldOfView(90.0f);
+	//FPCamera->SetFieldOfView(92.0f);
 }
 
 /*
@@ -231,6 +230,8 @@ void APCPlayer::LookUpAtRate(float Rate)
 */
 void APCPlayer::MoveForward(float Value)
 {
+	ForwardAxisValue = Value;
+
 	if ((Controller != NULL) && (Value != 0.0f))
 	{
 		// find out which way is forward
@@ -251,6 +252,8 @@ void APCPlayer::MoveForward(float Value)
 */
 void APCPlayer::MoveRight(float Value)
 {
+	RightAxisValue = Value;
+
 	if ( (Controller != NULL) && (Value != 0.0f) )
 	{
 		// find out which way is right
@@ -315,6 +318,7 @@ void APCPlayer::SetFirstPerson()
 
 	GetCharacterMovement()->bUseControllerDesiredRotation = true;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 2500.0f, 0.0f);
 }
 
 /*
@@ -331,6 +335,7 @@ void APCPlayer::SetThirdPerson()
 
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 }
 
 /*

@@ -55,6 +55,9 @@ protected:
 	FName MuzzleSocketName;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	FName ShellEjectSocketName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	UParticleSystem* MuzzleEffect;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
@@ -71,6 +74,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	TArray<EFiremode> FireModes;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	EFiremode CurrentFireMode;
 
 	int ShotCounter; //Counts how many shots, used for firemodes
@@ -103,10 +107,15 @@ protected:
 	float LastFireTime; //Private for fire rate
 	float TimeBetweenShots; //Private for fire rate
 
-	UAudioComponent* GunAudioComponent;
+	UAudioComponent* FireAudioComponent;
+
+	UAudioComponent* ShellEjectAudioComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	USoundCue* FireSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	USoundCue* ShellEjectSound;
 
 	virtual void Fire(); // Replaced by "StartFire()". Fire() is not protected
 
@@ -115,10 +124,20 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<AActor> ProjectileClass;
 
-	UAnimInstance* AnimInstance; //Player Mesh's Animation Controller - Saved as a Class Variable
+	UAnimInstance* PlayerAnimInstance; //Player Mesh's Animation Controller - Saved as a Class Variable
+	UAnimInstance* AnimInstance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	EWeaponType WeaponType;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	UAnimSequence* SingleFireAnimation;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	UAnimSequence* AutoFireAnimation;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	UParticleSystem* ShellEjectEffect;
 
 public:	
 	USkeletalMeshComponent* GetGunMeshComp();
@@ -134,10 +153,13 @@ public:
 	void SetHipTransform();
 	void SetAimTransform();
 
-	void SetPlayerAnimInstance(UAnimInstance* PlayerAnimInstance); //Setter for the controlling Player's Animation Controller
+	void SetPlayerAnimInstance(UAnimInstance* InAnimInstance); //Setter for the controlling Player's Animation Controller
 
 	void StartFire();
 	void StopFire();
 
 	void ChangeFiremode();
+
+	UFUNCTION(BlueprintCallable)
+	void PlayShellEjectEffect();
 };

@@ -369,7 +369,7 @@ void APCCharacter::EquipWeapon()
 		}
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_EquipWeapon);
-		GetWorldTimerManager().SetTimer(TimerHandle_EquipWeapon, this, &APCCharacter::PostEquipWeapon, 1.5f, false);
+		GetWorldTimerManager().SetTimer(TimerHandle_EquipWeapon, this, &APCCharacter::PostEquipWeapon, 1.0f, false);
 	}
 }
 

@@ -48,7 +48,7 @@ public:
 		View Variables
 		----------------------------------------------------------------
 	*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "View")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "View")
 	FVector FPCameraDefaultLocation;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "View")

@@ -26,23 +26,29 @@ APCWeaponBase::APCWeaponBase()
 	
 	//Default MuzzleSocket Name
 	MuzzleSocketName = "Muzzle";
+	ShellEjectSocketName = "ShellEject";
 
 	//Make Root the Mesh Component
 	RootComponent = MeshComp;
 
+	PlayerAnimInstance = nullptr;
 	AnimInstance = nullptr;
 
 	ShotCounter = 0;
 
 	// Create audio componenent for playing weapon sounds
-	GunAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComp"));
-	GunAudioComponent->bAutoActivate = false;
-	GunAudioComponent->AttachTo(MeshComp, MuzzleSocketName);
+	FireAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("FireAudioComponent"));
+	FireAudioComponent->bAutoActivate = false;
+
+	ShellEjectAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("ShellEjectAudioComponent"));
+	ShellEjectAudioComponent->bAutoActivate = false;
 }
 
 void APCWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	AnimInstance = MeshComp->GetAnimInstance();
 
 	if (FireModes.Num() != 0) 
 	{
@@ -51,13 +57,20 @@ void APCWeaponBase::BeginPlay()
 	else {
 		CurrentFireMode = EFiremode::SEMI_AUTO;
 	}
-	
 
 	TimeBetweenShots = 60 / RateOfFire;
 
+	FireAudioComponent->AttachTo(MeshComp, MuzzleSocketName);
+	ShellEjectAudioComponent->AttachTo(MeshComp, ShellEjectSocketName);
+
 	if (FireSound->IsValidLowLevelFast())
 	{
-		GunAudioComponent->SetSound(FireSound);
+		FireAudioComponent->SetSound(FireSound);
+	}
+
+	if (ShellEjectSound->IsValidLowLevelFast())
+	{
+		ShellEjectAudioComponent->SetSound(ShellEjectSound);
 	}
 }
 
@@ -141,9 +154,9 @@ void APCWeaponBase::ChangeFiremode()
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("This is an on screen message!"));
 }
 
-void APCWeaponBase::SetPlayerAnimInstance(UAnimInstance* PlayerAnimInstance)
+void APCWeaponBase::SetPlayerAnimInstance(UAnimInstance* InAnimInstance)
 {
-	AnimInstance = PlayerAnimInstance;
+	PlayerAnimInstance = InAnimInstance;
 }
 
 void APCWeaponBase::PlayFireEffects() {
@@ -156,12 +169,21 @@ void APCWeaponBase::PlayFireEffects() {
 	//Play the Recoil Animation
 	if (FireAnimation)
 	{
-		AnimInstance->PlaySlotAnimationAsDynamicMontage(FireAnimation, "Shoulders", 0.0f);
+		PlayerAnimInstance->PlaySlotAnimationAsDynamicMontage(FireAnimation, "Shoulders", 0.0f);
 	}
 
-	if (GunAudioComponent)
+	if (SingleFireAnimation && CurrentFireMode == EFiremode::SEMI_AUTO)
 	{
-		GunAudioComponent->Play();
+		AnimInstance->PlaySlotAnimationAsDynamicMontage(SingleFireAnimation, "Fire", 0.0f);
+	}
+	else if (AutoFireAnimation && CurrentFireMode == EFiremode::FULLY_SEMI_AUTO)
+	{
+		AnimInstance->PlaySlotAnimationAsDynamicMontage(AutoFireAnimation, "Fire", 0.0f);
+	}
+
+	if (FireAudioComponent)
+	{
+		FireAudioComponent->Play();
 	}
 
 	//Camera Shake
@@ -173,6 +195,19 @@ void APCWeaponBase::PlayFireEffects() {
 		{
 			PC->ClientPlayCameraShake(FireCamShake);
 		}
+	}
+}
+
+void APCWeaponBase::PlayShellEjectEffect()
+{
+	if (ShellEjectEffect)
+	{
+		UGameplayStatics::SpawnEmitterAttached(ShellEjectEffect, MeshComp, ShellEjectSocketName);
+	}
+
+	if (ShellEjectAudioComponent)
+	{
+		ShellEjectAudioComponent->Play();
 	}
 }
 

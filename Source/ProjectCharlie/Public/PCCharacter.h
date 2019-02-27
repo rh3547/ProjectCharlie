@@ -72,6 +72,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float MaxPeak;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+	float ForwardAxisValue;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+	float RightAxisValue;
+
 	/*
 		Weapon Variables
 		----------------------------------------------------------------
