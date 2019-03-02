@@ -27,6 +27,9 @@ class PROJECTCHARLIE_API APCPlayer : public APCCharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FPCamera;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class USpringArmComponent* FPCameraBoom;
+
 public:
 	APCPlayer();
 

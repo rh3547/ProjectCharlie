@@ -96,6 +96,7 @@ public:
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	bool bIsAiming;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	bool bDoingSmoothAim;
 
 	bool bDoingSmoothStopAimWeapon;

@@ -62,13 +62,23 @@ APCPlayer::APCPlayer()
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->AttachTo(GetMesh(), TEXT("FPCameraSocket"), EAttachLocation::SnapToTargetIncludingScale, true);
 	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 130.0f));
-	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
+	CameraBoom->TargetArmLength = CameraBoomDefaultLength; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
 	// Create the follow camera component
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
+	// FP Camera boom and camera
+	/*FPCameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("FPCameraBoom"));
+	FPCameraBoom->AttachTo(GetMesh(), TEXT("FPCameraSocket"), EAttachLocation::SnapToTargetIncludingScale, true);
+	FPCameraBoom->TargetArmLength = 0.0f;
+	FPCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FPCamera"));
+	FPCamera->SetupAttachment(FPCameraBoom, USpringArmComponent::SocketName);
+	FPCamera->SetAutoActivate(false);
+	FPCamera->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
+	FPCamera->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));*/
 
 	// Create the first person camera component
 	FPCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FPCamera"));
@@ -93,7 +103,6 @@ void APCPlayer::BeginPlay()
 
 	FPCamera->SetRelativeLocation(FPCameraDefaultLocation);
 	FPCamera->SetRelativeRotation(FPCameraDefaultRotation);
-	//FPCamera->SetFieldOfView(92.0f);
 }
 
 /*

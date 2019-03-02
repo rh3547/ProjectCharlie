@@ -98,7 +98,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	FRotator AimRotation;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	FVector ADSOffsetVector;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")

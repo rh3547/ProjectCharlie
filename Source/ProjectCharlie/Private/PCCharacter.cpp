@@ -410,7 +410,7 @@ void APCCharacter::StartAim()
 	GetCharacterMovement()->MaxWalkSpeed = AimWalkSpeed;
 
 	GetWorldTimerManager().ClearTimer(TimerHandle_ADS);
-	GetWorldTimerManager().SetTimer(TimerHandle_ADS, this, &APCCharacter::PostSmoothAim, 2.0f, false);
+	GetWorldTimerManager().SetTimer(TimerHandle_ADS, this, &APCCharacter::PostSmoothAim, 0.8f, false);
 }
 
 // Called with some delay after the smooth aim has started
@@ -435,7 +435,7 @@ void APCCharacter::StopAim()
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 
 	GetWorldTimerManager().ClearTimer(TimerHandle_StopADS);
-	GetWorldTimerManager().SetTimer(TimerHandle_StopADS, this, &APCCharacter::PostStopSmoothAim, 2.0f, false);
+	GetWorldTimerManager().SetTimer(TimerHandle_StopADS, this, &APCCharacter::PostStopSmoothAim, 0.8f, false);
 }
 
 // Called with some delay after smooth "un-aim"
