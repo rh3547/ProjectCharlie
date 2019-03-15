@@ -236,6 +236,11 @@ FVector APCWeaponBase::GetADSOffset()
 	return ADSOffsetVector;
 }
 
+float APCWeaponBase::GetAimSpeed()
+{
+	return AimSpeed;
+}
+
 void APCWeaponBase::SetHipTransform()
 {
 	RootComponent->SetRelativeLocationAndRotation(HipLocation, HipRotation);

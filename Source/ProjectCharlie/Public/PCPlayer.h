@@ -172,6 +172,7 @@ protected:
 		Other Functions
 		----------------------------------------------------------------
 	*/
+	virtual void Interact() override;
 
 	// Networking Test Example
 	void TestFire();

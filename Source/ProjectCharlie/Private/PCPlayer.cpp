@@ -119,11 +119,11 @@ void APCPlayer::Tick(float DeltaTime)
 	// Smooth ADS Camera Position
 	if (bIsFirstPerson && bIsWeaponEquipped && bIsAiming && bDoingSmoothAim)
 	{
-		FPCamera->SetRelativeLocation(FMath::VInterpTo(FPCamera->RelativeLocation, CurrentWeapon->GetADSOffset(), DeltaTime, 6.0f));
+		FPCamera->SetRelativeLocation(FMath::VInterpTo(FPCamera->RelativeLocation, CurrentWeapon->GetADSOffset(), DeltaTime, CurrentWeapon->GetAimSpeed()));
 	}
 	else if (bIsFirstPerson && bIsWeaponEquipped && !bIsAiming && bDoingSmoothStopAimCamera)
 	{
-		FPCamera->SetRelativeLocation(FMath::VInterpTo(FPCamera->RelativeLocation, FPCameraDefaultLocation, DeltaTime, 6.0f));
+		FPCamera->SetRelativeLocation(FMath::VInterpTo(FPCamera->RelativeLocation, FPCameraDefaultLocation, DeltaTime, CurrentWeapon->GetAimSpeed()));
 	}
 
 	if (!bIsFirstPerson && bIsWeaponEquipped && bIsAiming)
@@ -411,6 +411,40 @@ void APCPlayer::PostStopSmoothAim()
 	Super::PostStopSmoothAim();
 
 	bDoingSmoothStopAimCamera = false;
+}
+
+/*
+	Interact
+	======================================================================
+	Attempt to interact with an interactable object. Sends a raycast out
+	from the head, if it hits anything with the IInteractable interface
+	it will call its OnInteract function.
+	======================================================================
+*/
+void APCPlayer::Interact()
+{
+	FHitResult OutHit;
+	FVector Start = FPCamera->GetComponentLocation();
+	FVector ForwardVector = FPCamera->GetForwardVector();
+	FVector End = ((ForwardVector * InteractDistance) + Start);
+	FCollisionQueryParams CollisionParams;
+
+	// Draw a debug line to show the raycast
+	//DrawDebugLine(GetWorld(), Start, End, FColor::Red, true);
+
+	bool IsHit = GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, CollisionParams);
+
+	if (IsHit)
+	{
+		if (OutHit.bBlockingHit)
+		{
+			IInteractable* InteractableActor = Cast<IInteractable>(OutHit.Actor);
+			if (InteractableActor)
+			{
+				InteractableActor->Execute_OnInteract(Cast<UObject>(InteractableActor));
+			}
+		}
+	}
 }
 
 

@@ -82,6 +82,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon") //Rate of Fire in Rounds Per Minute
 	float RateOfFire; //Rounds Per Minute
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	float AimSpeed; // Arbitrary number, 8.0f is ideal for a Glock17
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	float HipInertiaModifier;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	float AimInertiaModifier;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon") //Set the Player's Recoil Animation
 	UAnimSequence* FireAnimation;
 
@@ -139,7 +148,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	UParticleSystem* ShellEjectEffect;
 
-public:	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	UAnimSequence* ArmsPose;
+
+public:
 	USkeletalMeshComponent* GetGunMeshComp();
 
 	FVector GetHipLocation();
@@ -147,6 +159,8 @@ public:
 	FRotator GetHipRotation();
 	FRotator GetAimRotation();
 	FVector GetADSOffset();
+
+	float GetAimSpeed();
 
 	UAnimSequence* GetEquipAnimation();
 

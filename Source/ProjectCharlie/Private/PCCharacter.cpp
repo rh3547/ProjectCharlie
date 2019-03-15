@@ -257,7 +257,7 @@ void APCCharacter::Interact()
 	FCollisionQueryParams CollisionParams;
 
 	// Draw a debug line to show the raycast
-	//DrawDebugLine(GetWorld(), Start, End, FColor::Red, true);
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red, true);
 
 	bool IsHit = GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, CollisionParams);
 
