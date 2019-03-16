@@ -23,7 +23,7 @@ public:
 	//======================================================================
 
 	/*
-		Status Variables
+		Health/State Variables
 		----------------------------------------------------------------
 	*/
 	UPROPERTY(BlueprintReadWrite, Category = "Health")
@@ -105,7 +105,7 @@ public:
 
 	FTimerHandle TimerHandle_StopADS;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	APCWeaponBase* CurrentWeapon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
@@ -114,10 +114,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	FName WeaponAttachSocketName;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	TSubclassOf<APCWeaponBase> PrimaryWeaponClass;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	TSubclassOf<APCWeaponBase> SecondaryWeaponClass;
 
 	/*
@@ -242,7 +242,7 @@ protected:
 	*/
 	virtual void Interact();
 
-public:	
+public:
 
 	//======================================================================
 	// Public Functions

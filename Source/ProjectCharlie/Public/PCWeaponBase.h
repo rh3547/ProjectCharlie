@@ -36,8 +36,8 @@ UCLASS()
 class PROJECTCHARLIE_API APCWeaponBase : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	APCWeaponBase();
 
@@ -173,7 +173,9 @@ public:
 	void StopFire();
 
 	void ChangeFiremode();
-
+	
 	UFUNCTION(BlueprintCallable)
 	void PlayShellEjectEffect();
+
+	TArray<EFiremode> GetFireModes();
 };

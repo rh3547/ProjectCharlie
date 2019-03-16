@@ -23,7 +23,7 @@ APCWeaponBase::APCWeaponBase()
 
 	//Create a Skeletal Mesh Component for the Weapon
 	MeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComp"));
-	
+
 	//Default MuzzleSocket Name
 	MuzzleSocketName = "Muzzle";
 	ShellEjectSocketName = "ShellEject";
@@ -50,7 +50,7 @@ void APCWeaponBase::BeginPlay()
 
 	AnimInstance = MeshComp->GetAnimInstance();
 
-	if (FireModes.Num() != 0) 
+	if (FireModes.Num() != 0)
 	{
 		CurrentFireMode = FireModes[0];
 	}
@@ -103,9 +103,9 @@ void APCWeaponBase::Fire()
 			AActor* ProjectileActor = GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
 			APCProjectileBase* ProjectileBase = Cast<APCProjectileBase>(ProjectileActor);
 			ProjectileBase->SetOrigin(MeshComp->GetSocketLocation(MuzzleSocketName));
-			
+
 			//Increment ShotCounter by 1
-			ShotCounter++; 
+			ShotCounter++;
 		}
 
 		if (DebugWeaponDrawing > 0)
@@ -152,6 +152,11 @@ void APCWeaponBase::ChangeFiremode()
 		}
 	}
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("This is an on screen message!"));
+}
+
+TArray<EFiremode> APCWeaponBase::GetFireModes()
+{
+	return FireModes;
 }
 
 void APCWeaponBase::SetPlayerAnimInstance(UAnimInstance* InAnimInstance)
@@ -211,7 +216,7 @@ void APCWeaponBase::PlayShellEjectEffect()
 	}
 }
 
-FVector APCWeaponBase::GetHipLocation() 
+FVector APCWeaponBase::GetHipLocation()
 {
 	return HipLocation;
 }
