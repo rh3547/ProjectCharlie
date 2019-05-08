@@ -209,6 +209,7 @@ protected:
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 	void MulticastToggleEquipWeapon();
 
+	UFUNCTION(BlueprintCallable)
 	virtual void ChangeFiremode();
 
 	UFUNCTION(BlueprintCallable)

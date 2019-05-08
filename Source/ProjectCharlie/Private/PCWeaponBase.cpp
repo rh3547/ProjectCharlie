@@ -11,6 +11,8 @@
 #include "Components/AudioComponent.h"
 #include "PCProjectileBase.h"
 
+#include "PCCharacter.h"
+
 //Weapon Debug Command
 static int32 DebugWeaponDrawing = 0;
 FAutoConsoleVariableRef CVARDebugWeaponDrawing(TEXT("PC.DebugWeapons"), DebugWeaponDrawing, TEXT("Draw Debug Lines for Weapons"), ECVF_Cheat);

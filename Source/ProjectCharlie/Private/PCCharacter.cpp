@@ -74,7 +74,7 @@ void APCCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	// Get the Player's Anim Instance and Set to Class Variable
-	AnimInstance = GetMesh()->GetAnimInstance();
+	//AnimInstance = GetMesh()->GetAnimInstance();
 
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 	GetCharacterMovement()->MaxWalkSpeedCrouched = MaxCrouchSpeed;
@@ -339,6 +339,10 @@ void APCCharacter::LocalToggleEquipWeapon()
 
 void APCCharacter::EquipWeapon()
 {
+	// Get the Player's Anim Instance and Set to Class Variable [Here to fix nullptr] - On Begin play sets to null for some reason
+	// TODO Fix cause its .bad.exe
+	AnimInstance = GetMesh()->GetAnimInstance();
+
 	bIsWeaponEquipped = true;
 	bIsRifleEquipped = true;
 	bCanAim = false;
