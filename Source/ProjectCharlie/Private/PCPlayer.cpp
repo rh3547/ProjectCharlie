@@ -43,7 +43,6 @@ APCPlayer::APCPlayer()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	//FPCameraDefaultLocation = FVector(6.193748f, 4.289769f, 0.805958f);
 	FPCameraDefaultRotation = FRotator(0.0f, 90.0f, -90.0f);
 
 	FollowCameraDefaultLocation = FVector(0.0f, 0.0f, 0.0f);
@@ -61,33 +60,17 @@ APCPlayer::APCPlayer()
 	// Create the camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->AttachTo(GetMesh(), TEXT("FPCameraSocket"), EAttachLocation::SnapToTargetIncludingScale, true);
-	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 130.0f));
-	CameraBoom->TargetArmLength = CameraBoomDefaultLength; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
 	// Create the follow camera component
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// FP Camera boom and camera
-	/*FPCameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("FPCameraBoom"));
-	FPCameraBoom->AttachTo(GetMesh(), TEXT("FPCameraSocket"), EAttachLocation::SnapToTargetIncludingScale, true);
-	FPCameraBoom->TargetArmLength = 0.0f;
-	FPCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FPCamera"));
-	FPCamera->SetupAttachment(FPCameraBoom, USpringArmComponent::SocketName);
-	FPCamera->SetAutoActivate(false);
-	FPCamera->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
-	FPCamera->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));*/
-
 	// Create the first person camera component
 	FPCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FPCamera"));
 	FPCamera->SetupAttachment(GetMesh(), TEXT("FPCameraSocket"));
 	FPCamera->bUsePawnControlRotation = true;
 	FPCamera->SetAutoActivate(false);
-
-	FPCamera->SetRelativeLocation(FPCameraDefaultLocation);
-	FPCamera->SetRelativeRotation(FPCameraDefaultRotation);
 }
 
 /*
@@ -103,6 +86,10 @@ void APCPlayer::BeginPlay()
 
 	FPCamera->SetRelativeLocation(FPCameraDefaultLocation);
 	FPCamera->SetRelativeRotation(FPCameraDefaultRotation);
+
+	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 130.0f));
+	CameraBoom->TargetArmLength = CameraBoomDefaultLength; // The camera follows at this distance behind the character	
+	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 }
 
 /*
@@ -196,6 +183,7 @@ void APCPlayer::SetupPlayerInputComponent(class UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APCPlayer::StartFire);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APCPlayer::StopFire);
 	PlayerInputComponent->BindAction("Firemode", IE_Released, this, &APCPlayer::ChangeFiremode);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &APCPlayer::BeginReload);
 
 	// Melee bindings
 	PlayerInputComponent->BindAction("EquipMelee", IE_Pressed, this, &APCPlayer::ToggleEquipMelee);

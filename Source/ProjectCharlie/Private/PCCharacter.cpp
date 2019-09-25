@@ -33,6 +33,7 @@ APCCharacter::APCCharacter()
 	bDoingSmoothAim = false;
 	bDoingSmoothStopAimWeapon = false;
 	bCanAim = false;
+	bCanFire = false;
 	bIsMeleeEquipped = false;
 	bIsDead = false;
 	bIsLeaningLeft = false;
@@ -78,6 +79,24 @@ void APCCharacter::BeginPlay()
 
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 	GetCharacterMovement()->MaxWalkSpeedCrouched = MaxCrouchSpeed;
+
+	// If a primary weapon is specified, spawn it in the "holster"
+	if (PrimaryWeaponClass)
+	{
+		FActorSpawnParameters PWSpawnParams;
+		PWSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		PrimaryWeapon = GetWorld()->SpawnActor<APCWeaponBase>(PrimaryWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, PWSpawnParams);
+		PrimaryWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, PrimaryWeapon->GetHolsterSocketName());
+	}
+
+	// If a secondary weapon is specified, spawn it in the "holster"
+	if (SecondaryWeaponClass)
+	{
+		FActorSpawnParameters SWSpawnParams;
+		SWSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SecondaryWeapon = GetWorld()->SpawnActor<APCWeaponBase>(SecondaryWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, SWSpawnParams);
+		SecondaryWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, SecondaryWeapon->GetHolsterSocketName());
+	}
 }
 
 /*
@@ -333,40 +352,31 @@ void APCCharacter::LocalToggleEquipWeapon()
 	}
 	else
 	{
-		EquipWeapon();
+		EquipWeapon(PrimaryWeapon);
 	}
 }
 
-void APCCharacter::EquipWeapon()
+void APCCharacter::EquipWeapon(APCWeaponBase* Weapon)
 {
 	bIsWeaponEquipped = true;
 	bIsRifleEquipped = true;
 	bCanAim = false;
+	bCanFire = false;
 
-	//Spawn A Default Weapon
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	CurrentWeapon = GetWorld()->SpawnActor<APCWeaponBase>(PrimaryWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+	CurrentWeapon = Weapon;
 
 	if (CurrentWeapon)
 	{
-		// Pass the Player's Animation Instance to the Weapon (For Recoil Management, etc.)
+		// If there is a Player Animation Instance, pass it to the Weapon (For Recoil Management, etc.), and play the equip animation
 		if (AnimInstance)
 		{
 			CurrentWeapon->SetPlayerAnimInstance(AnimInstance);
+			AnimInstance->PlaySlotAnimationAsDynamicMontage(Weapon->GetEquipAnimation(), "UpperBody", 0.25f, 0.25f, 1.0f, 1, -1.0f, 0.203f);
 		}
 
 		CurrentWeapon->SetOwner(this);
-		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
-
-		CurrentWeapon->SetHipTransform();
 
 		CurrentWeaponMesh = CurrentWeapon->GetGunMeshComp();
-
-		if (AnimInstance)
-		{
-			AnimInstance->PlaySlotAnimationAsDynamicMontage(CurrentWeapon->GetEquipAnimation(), "UpperBody", 0.0f);
-		}
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_EquipWeapon);
 		GetWorldTimerManager().SetTimer(TimerHandle_EquipWeapon, this, &APCCharacter::PostEquipWeapon, 1.0f, false);
@@ -377,6 +387,13 @@ void APCCharacter::EquipWeapon()
 void APCCharacter::PostEquipWeapon()
 {
 	bCanAim = true;
+	bCanFire = true;
+}
+
+void APCCharacter::TakeCurrentWeaponInHands()
+{
+	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
+	CurrentWeapon->SetHipTransform();
 }
 
 void APCCharacter::UnequipWeapon()
@@ -384,9 +401,60 @@ void APCCharacter::UnequipWeapon()
 	bIsWeaponEquipped = false;
 	bIsRifleEquipped = false;
 	bCanAim = false;
+	bCanFire = false;
 
-	CurrentWeaponMesh = nullptr;
-	CurrentWeapon->Destroy();
+	if (CurrentWeapon)
+	{
+		// Play the equip animation
+		if (AnimInstance)
+		{
+			AnimInstance->PlaySlotAnimationAsDynamicMontage(CurrentWeapon->GetEquipAnimation(), "UpperBody", 0.25f, 0.25f, 1.0f);
+		}
+	}
+}
+
+void APCCharacter::PutCurrentWeaponInHolster()
+{
+	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, CurrentWeapon->GetHolsterSocketName());
+	CurrentWeapon->SetZeroTransform();
+}
+
+void APCCharacter::BeginReload()
+{
+	bCanFire = false;
+	
+	if (CurrentWeapon)
+	{
+		// Play the reload animation
+		if (AnimInstance)
+		{
+			AnimInstance->PlaySlotAnimationAsDynamicMontage(CurrentWeapon->GetReloadAnimation(), "UpperBody", 0.25f, 0.25f, 1.0f);
+		}
+	}
+}
+
+void APCCharacter::TakeMagazineInHands()
+{
+	if (CurrentWeapon && CurrentWeapon->GetCurrentMagazine())
+	{
+		CurrentWeapon->GetCurrentMagazine()->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, MagazineHandSocketName);
+		CurrentWeapon->GetCurrentMagazine()->DoHandOffset();
+	}
+}
+
+void APCCharacter::PutMagazineInWeapon()
+{
+	if (CurrentWeapon && CurrentWeapon->GetCurrentMagazine())
+	{
+		CurrentWeapon->GetCurrentMagazine()->AttachToComponent(CurrentWeaponMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, CurrentWeapon->GetMagazineSocketName());
+		CurrentWeapon->GetCurrentMagazine()->DoGunOffset();
+	}
+}
+
+void APCCharacter::FinishReload()
+{
+	CurrentWeapon->Reload();
+	bCanFire = true;
 }
 
 /*
@@ -453,7 +521,8 @@ void APCCharacter::PostStopSmoothAim()
 */
 void APCCharacter::ChangeFiremode()
 {
-	if (CurrentWeapon) {
+	if (CurrentWeapon)
+	{
 		CurrentWeapon->ChangeFiremode();
 	}
 }
@@ -468,7 +537,7 @@ void APCCharacter::ChangeFiremode()
 */
 void APCCharacter::StartFire()
 {
-	if (!bIsWeaponEquipped || bIsSprinting || bWasJumping)
+	if (!bIsWeaponEquipped || bIsSprinting || bWasJumping || !bCanFire)
 	{
 		return;
 	}
