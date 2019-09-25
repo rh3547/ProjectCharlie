@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "PCMagazineBase.h"
 #include "PCWeaponBase.generated.h"
 
 class USkeletalMeshComponent; //forward declare
@@ -48,28 +49,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USkeletalMeshComponent* MeshComp;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	TSubclassOf<UDamageType> DamageType;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	FName MuzzleSocketName;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	FName ShellEjectSocketName;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	UParticleSystem* MuzzleEffect;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	UParticleSystem* ImpactEffect;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	TSubclassOf<UCameraShake> FireCamShake;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	UAnimSequence* EquipAnimation;
-
-	void PlayFireEffects();
+	// General weapon vars
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	EWeaponType WeaponType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	TArray<EFiremode> FireModes;
@@ -77,13 +59,20 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	EFiremode CurrentFireMode;
 
-	int ShotCounter; //Counts how many shots, used for firemodes
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	TSubclassOf<APCMagazineBase> MagazineClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon") //Rate of Fire in Rounds Per Minute
-	float RateOfFire; //Rounds Per Minute
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	APCMagazineBase* CurrentMagazine;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	float AimSpeed; // Arbitrary number, 8.0f is ideal for a Glock17
+	FName MagazineSocketName;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon") // Rate of Fire in Rounds Per Minute
+	float RateOfFire;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon") // Arbitrary number, 8.0f is ideal for a Glock17
+	float AimSpeed;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	float HipInertiaModifier;
@@ -91,65 +80,103 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	float AimInertiaModifier;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon") //Set the Player's Recoil Animation
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	TSubclassOf<UDamageType> DamageType;
+
+	
+	// Animations
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Animations")
+	UAnimSequence* EquipAnimation;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Animations")
+	UAnimSequence* ReloadAnimation;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon Animations") // Set the Player's Recoil Animation
 	UAnimSequence* FireAnimation;
 
-	//Gun offsets
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	FVector HipLocation;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Animations")
+	UAnimSequence* SingleFireAnimation;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	FRotator HipRotation;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Animations")
+	UAnimSequence* AutoFireAnimation;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	FVector AimLocation;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	FRotator AimRotation;
+	// Firing/Muzzle effects
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Effects")
+	UParticleSystem* MuzzleEffect;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	FVector ADSOffsetVector;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	FVector MuzzleFlashScale;
-
-	float LastFireTime; //Private for fire rate
-	float TimeBetweenShots; //Private for fire rate
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon Effects")
+	USoundCue* FireSound;
 
 	UAudioComponent* FireAudioComponent;
 
-	UAudioComponent* ShellEjectAudioComponent;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Effects")
+	UParticleSystem* ImpactEffect;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Effects")
+	FName MuzzleSocketName;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	USoundCue* FireSound;
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon Effects")
+	FVector MuzzleFlashScale;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon Effects")
+	TSubclassOf<UCameraShake> FireCamShake;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon Effects")
+	USoundCue* EmptyMagSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon Effects")
+	USoundCue* MagEjectSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon Effects")
+	USoundCue* MagInsertSound;
+
+	UAudioComponent* MagazineAudioComponent;
+
+
+	// Shell eject effects
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Effects")
+	UParticleSystem* ShellEjectEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon Effects")
 	USoundCue* ShellEjectSound;
 
-	virtual void Fire(); // Replaced by "StartFire()". Fire() is not protected
+	UAudioComponent* ShellEjectAudioComponent;
 
-	FTimerHandle TimerHandle_TimeBetweenShots;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Effects")
+	FName ShellEjectSocketName;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	TSubclassOf<AActor> ProjectileClass;
+	
+	// Holster vars
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon (Other)")
+	FName HolsterSocketName;
+
+
+	// Gun offsets
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon Offsets")
+	FVector HipLocation;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon Offsets")
+	FRotator HipRotation;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon Offsets")
+	FVector AimLocation;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon Offsets")
+	FRotator AimRotation;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Offsets")
+	FVector ADSOffsetVector;
 
 	UAnimInstance* PlayerAnimInstance; //Player Mesh's Animation Controller - Saved as a Class Variable
 	UAnimInstance* AnimInstance;
+	int ShotCounter; // Counts how many shots, used for firemodes
+	float LastFireTime; //Private for fire rate
+	float TimeBetweenShots; //Private for fire rate
+	FTimerHandle TimerHandle_TimeBetweenShots;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	EWeaponType WeaponType;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	UAnimSequence* SingleFireAnimation;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	UAnimSequence* AutoFireAnimation;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	UParticleSystem* ShellEjectEffect;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	UAnimSequence* ArmsPose;
+	virtual void Fire(); // Replaced by "StartFire()". Fire() is not protected
+	void PlayFireEffects();
 
 public:
 	USkeletalMeshComponent* GetGunMeshComp();
@@ -160,17 +187,24 @@ public:
 	FRotator GetAimRotation();
 	FVector GetADSOffset();
 
+	FName GetHolsterSocketName();
+	FName GetMagazineSocketName();
+
 	float GetAimSpeed();
 
 	UAnimSequence* GetEquipAnimation();
+	UAnimSequence* GetReloadAnimation();
 
 	void SetHipTransform();
 	void SetAimTransform();
+	void SetZeroTransform();
 
 	void SetPlayerAnimInstance(UAnimInstance* InAnimInstance); //Setter for the controlling Player's Animation Controller
 
 	void StartFire();
 	void StopFire();
+
+	void Reload();
 
 	void ChangeFiremode();
 	
@@ -178,4 +212,6 @@ public:
 	void PlayShellEjectEffect();
 
 	TArray<EFiremode> GetFireModes();
+
+	APCMagazineBase* GetCurrentMagazine();
 };

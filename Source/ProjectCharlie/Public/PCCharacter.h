@@ -91,6 +91,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	bool bCanAim;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
+	bool bCanFire;
+
 	FTimerHandle TimerHandle_EquipWeapon;
 
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
@@ -106,19 +109,28 @@ public:
 	FTimerHandle TimerHandle_StopADS;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	TSubclassOf<APCWeaponBase> PrimaryWeaponClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	APCWeaponBase* PrimaryWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	TSubclassOf<APCWeaponBase> SecondaryWeaponClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	APCWeaponBase* SecondaryWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	APCWeaponBase* CurrentWeapon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* CurrentWeaponMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	FName WeaponAttachSocketName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	TSubclassOf<APCWeaponBase> PrimaryWeaponClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	TSubclassOf<APCWeaponBase> SecondaryWeaponClass;
+	FName MagazineHandSocketName;
 
 	/*
 		Melee Variables
@@ -194,12 +206,18 @@ protected:
 	virtual void ToggleEquipWeapon();
 
 	UFUNCTION(BlueprintCallable)
-	virtual void EquipWeapon();
+	virtual void EquipWeapon(APCWeaponBase* Weapon);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void TakeCurrentWeaponInHands();
 
 	virtual void PostEquipWeapon();
 
 	UFUNCTION(BlueprintCallable)
 	virtual void UnequipWeapon();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void PutCurrentWeaponInHolster();
 
 	virtual void LocalToggleEquipWeapon();
 
@@ -217,6 +235,18 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void StopFire();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void BeginReload();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void TakeMagazineInHands();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void PutMagazineInWeapon();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void FinishReload();
 
 	/*
 		Melee Functions

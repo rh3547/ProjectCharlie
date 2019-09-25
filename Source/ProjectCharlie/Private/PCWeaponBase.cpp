@@ -44,6 +44,9 @@ APCWeaponBase::APCWeaponBase()
 
 	ShellEjectAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("ShellEjectAudioComponent"));
 	ShellEjectAudioComponent->bAutoActivate = false;
+
+	MagazineAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("MagazineAudioComponent"));
+	MagazineAudioComponent->bAutoActivate = false;
 }
 
 void APCWeaponBase::BeginPlay()
@@ -64,6 +67,7 @@ void APCWeaponBase::BeginPlay()
 
 	FireAudioComponent->AttachTo(MeshComp, MuzzleSocketName);
 	ShellEjectAudioComponent->AttachTo(MeshComp, ShellEjectSocketName);
+	MagazineAudioComponent->AttachTo(MeshComp, MagazineSocketName);
 
 	if (FireSound->IsValidLowLevelFast())
 	{
@@ -74,6 +78,24 @@ void APCWeaponBase::BeginPlay()
 	{
 		ShellEjectAudioComponent->SetSound(ShellEjectSound);
 	}
+
+	if (EmptyMagSound->IsValidLowLevelFast())
+	{
+		MagazineAudioComponent->SetSound(EmptyMagSound);
+	}
+
+	if (MagazineClass)
+	{
+		FActorSpawnParameters SWSpawnParams;
+		SWSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		CurrentMagazine = GetWorld()->SpawnActor<APCMagazineBase>(MagazineClass, FVector::ZeroVector, FRotator::ZeroRotator, SWSpawnParams);
+		CurrentMagazine->AttachToComponent(MeshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, MagazineSocketName);
+		CurrentMagazine->DoGunOffset();
+	}
+	else
+	{
+		CurrentMagazine = nullptr;
+	}
 }
 
 USkeletalMeshComponent* APCWeaponBase::GetGunMeshComp()
@@ -83,31 +105,42 @@ USkeletalMeshComponent* APCWeaponBase::GetGunMeshComp()
 
 void APCWeaponBase::Fire()
 {
-	if (((CurrentFireMode == EFiremode::SEMI_AUTO || CurrentFireMode == EFiremode::SINGLE_ACTION) && ShotCounter < 1) || (CurrentFireMode == EFiremode::FULLY_SEMI_AUTO) || (CurrentFireMode == EFiremode::THREE_ROUND_BURST && ShotCounter < 3)) {
+	// Shots remaining check. This one is to ensure firing stops if in the middle of automatic fire
+	if (CurrentMagazine == nullptr || CurrentMagazine->IsEmpty())
+	{
+		GetWorldTimerManager().ClearTimer(TimerHandle_TimeBetweenShots);
+		ShotCounter = 0;
+		return;
+	}
 
-		AActor* MyOwner = GetOwner(); //need to setup in editor PlayerPawn - Set Owner in BP Implementation
+	if (((CurrentFireMode == EFiremode::SEMI_AUTO || CurrentFireMode == EFiremode::SINGLE_ACTION) && ShotCounter < 1) || (CurrentFireMode == EFiremode::FULLY_SEMI_AUTO) || (CurrentFireMode == EFiremode::THREE_ROUND_BURST && ShotCounter < 3))
+	{
+		AActor* MyOwner = GetOwner(); // Need to setup in editor PlayerPawn - Set Owner in BP Implementation
 
-		if (MyOwner && ProjectileClass)
+		if (MyOwner && CurrentMagazine->ProjectileClass)
 		{
 			FVector EyeLocation;
 			FRotator EyeRotation;
 			MyOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
 
-			FVector MuzzleLocation = MeshComp->GetSocketLocation(MuzzleSocketName); // "Muzzle" with base pack
-			FRotator MuzzleRotation = MeshComp->GetSocketRotation(MuzzleSocketName); //was #out
+			FVector MuzzleLocation = MeshComp->GetSocketLocation(MuzzleSocketName);
+			FRotator MuzzleRotation = MeshComp->GetSocketRotation(MuzzleSocketName);
 
-			//Spawn Even If Collisions
+			// Spawn Even If Collisions
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			SpawnParams.Instigator = Cast<APawn>(MyOwner);
 
-			//Spawn a Projectile
-			AActor* ProjectileActor = GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
+			// Spawn a Projectile
+			AActor* ProjectileActor = GetWorld()->SpawnActor<AActor>(CurrentMagazine->ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
 			APCProjectileBase* ProjectileBase = Cast<APCProjectileBase>(ProjectileActor);
 			ProjectileBase->SetOrigin(MeshComp->GetSocketLocation(MuzzleSocketName));
 
-			//Increment ShotCounter by 1
+			// Increment ShotCounter by 1
 			ShotCounter++;
+
+			// Handle ammo use
+			CurrentMagazine->UnloadOneRound();
 		}
 
 		if (DebugWeaponDrawing > 0)
@@ -115,7 +148,7 @@ void APCWeaponBase::Fire()
 			//Place DEBUG statements here.
 		}
 
-		//Play other effects, such as muzzle flash, sound, etc.
+		// Play other effects, such as muzzle flash, sound, etc.
 		PlayFireEffects();
 
 		LastFireTime = GetWorld()->TimeSeconds; //Set the last time we fired our weapon (used for fire rate check)
@@ -124,6 +157,17 @@ void APCWeaponBase::Fire()
 
 void APCWeaponBase::StartFire()
 {
+	// Shots remaining check. This one is to ensure the empty sound is played only once.
+	if (CurrentMagazine == nullptr || CurrentMagazine->IsEmpty())
+	{
+		if (MagazineAudioComponent)
+		{
+			MagazineAudioComponent->Play();
+		}
+
+		return;
+	}
+
 	float FirstDelay = FMath::Max(LastFireTime + TimeBetweenShots - GetWorld()->TimeSeconds, 0.0f); //Clamp to 0+
 
 	//Calls the Fire() function with a delay based on the time last fired (to correspond with fire rate).
@@ -159,6 +203,14 @@ void APCWeaponBase::ChangeFiremode()
 TArray<EFiremode> APCWeaponBase::GetFireModes()
 {
 	return FireModes;
+}
+
+void APCWeaponBase::Reload()
+{
+	if (CurrentMagazine)
+	{
+		CurrentMagazine->Refill();
+	}
 }
 
 void APCWeaponBase::SetPlayerAnimInstance(UAnimInstance* InAnimInstance)
@@ -218,6 +270,11 @@ void APCWeaponBase::PlayShellEjectEffect()
 	}
 }
 
+void APCWeaponBase::SetAimTransform()
+{
+	RootComponent->SetRelativeLocationAndRotation(AimLocation, AimRotation);
+}
+
 FVector APCWeaponBase::GetHipLocation()
 {
 	return HipLocation;
@@ -253,12 +310,32 @@ void APCWeaponBase::SetHipTransform()
 	RootComponent->SetRelativeLocationAndRotation(HipLocation, HipRotation);
 }
 
-void APCWeaponBase::SetAimTransform()
+void APCWeaponBase::SetZeroTransform()
 {
-	RootComponent->SetRelativeLocationAndRotation(AimLocation, AimRotation);
+	RootComponent->SetRelativeLocationAndRotation(FVector::ZeroVector, FRotator::ZeroRotator);
 }
 
 UAnimSequence* APCWeaponBase::GetEquipAnimation()
 {
 	return EquipAnimation;
+}
+
+UAnimSequence* APCWeaponBase::GetReloadAnimation()
+{
+	return ReloadAnimation;
+}
+
+FName APCWeaponBase::GetHolsterSocketName()
+{
+	return HolsterSocketName;
+}
+
+FName APCWeaponBase::GetMagazineSocketName()
+{
+	return MagazineSocketName;
+}
+
+APCMagazineBase* APCWeaponBase::GetCurrentMagazine()
+{
+	return CurrentMagazine;
 }
