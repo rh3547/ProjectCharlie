@@ -392,6 +392,11 @@ void APCCharacter::PostEquipWeapon()
 {
 	bCanAim = true;
 	bCanFire = true;
+
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->PlayWeaponRaiseSound();
+	}
 }
 
 void APCCharacter::TakeCurrentWeaponInHands()
@@ -414,6 +419,8 @@ void APCCharacter::UnequipWeapon()
 		{
 			AnimInstance->PlaySlotAnimationAsDynamicMontage(CurrentWeapon->GetEquipAnimation(), "UpperBody", 0.25f, 0.25f, 1.0f);
 		}
+
+		CurrentWeapon->PlayWeaponLowerSound();
 	}
 }
 
@@ -443,6 +450,7 @@ void APCCharacter::TakeMagazineInHands()
 	{
 		CurrentWeapon->GetCurrentMagazine()->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, MagazineHandSocketName);
 		CurrentWeapon->GetCurrentMagazine()->DoHandOffset();
+		CurrentWeapon->PlayMagEjectSound();
 	}
 }
 
@@ -452,6 +460,7 @@ void APCCharacter::PutMagazineInWeapon()
 	{
 		CurrentWeapon->GetCurrentMagazine()->AttachToComponent(CurrentWeaponMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, CurrentWeapon->GetMagazineSocketName());
 		CurrentWeapon->GetCurrentMagazine()->DoGunOffset();
+		CurrentWeapon->PlayMagInsertSound();
 	}
 }
 

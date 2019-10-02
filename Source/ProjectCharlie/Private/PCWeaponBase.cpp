@@ -47,6 +47,18 @@ APCWeaponBase::APCWeaponBase()
 
 	MagazineAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("MagazineAudioComponent"));
 	MagazineAudioComponent->bAutoActivate = false;
+
+	MagazineEjectAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("MagazineEjectAudioComponent"));
+	MagazineEjectAudioComponent->bAutoActivate = false;
+
+	MagazineInsertAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("MagazineInsertAudioComponent"));
+	MagazineInsertAudioComponent->bAutoActivate = false;
+
+	WeaponRaiseAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("WeaponRaiseAudioComponent"));
+	WeaponRaiseAudioComponent->bAutoActivate = false;
+
+	WeaponLowerAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("WeaponLowerAudioComponent"));
+	WeaponLowerAudioComponent->bAutoActivate = false;
 }
 
 void APCWeaponBase::BeginPlay()
@@ -68,6 +80,10 @@ void APCWeaponBase::BeginPlay()
 	FireAudioComponent->AttachTo(MeshComp, MuzzleSocketName);
 	ShellEjectAudioComponent->AttachTo(MeshComp, ShellEjectSocketName);
 	MagazineAudioComponent->AttachTo(MeshComp, MagazineSocketName);
+	MagazineEjectAudioComponent->AttachTo(MeshComp, MagazineSocketName);
+	MagazineInsertAudioComponent->AttachTo(MeshComp, MagazineSocketName);
+	WeaponRaiseAudioComponent->AttachTo(MeshComp, MagazineSocketName);
+	WeaponLowerAudioComponent->AttachTo(MeshComp, MagazineSocketName);
 
 	if (FireSound->IsValidLowLevelFast())
 	{
@@ -82,6 +98,26 @@ void APCWeaponBase::BeginPlay()
 	if (EmptyMagSound->IsValidLowLevelFast())
 	{
 		MagazineAudioComponent->SetSound(EmptyMagSound);
+	}
+	
+	if (MagEjectSound->IsValidLowLevelFast())
+	{
+		MagazineEjectAudioComponent->SetSound(MagEjectSound);
+	}
+	
+	if (MagInsertSound->IsValidLowLevelFast())
+	{
+		MagazineInsertAudioComponent->SetSound(MagInsertSound);
+	}
+
+	if (WeaponRaiseSound->IsValidLowLevelFast())
+	{
+		WeaponRaiseAudioComponent->SetSound(WeaponRaiseSound);
+	}
+
+	if (WeaponLowerSound->IsValidLowLevelFast())
+	{
+		WeaponLowerAudioComponent->SetSound(WeaponLowerSound);
 	}
 
 	if (MagazineClass)
@@ -338,4 +374,36 @@ FName APCWeaponBase::GetMagazineSocketName()
 APCMagazineBase* APCWeaponBase::GetCurrentMagazine()
 {
 	return CurrentMagazine;
+}
+
+void APCWeaponBase::PlayMagEjectSound()
+{
+	if (MagazineEjectAudioComponent)
+	{
+		MagazineEjectAudioComponent->Play();
+	}
+}
+
+void APCWeaponBase::PlayMagInsertSound()
+{
+	if (MagazineInsertAudioComponent)
+	{
+		MagazineInsertAudioComponent->Play();
+	}
+}
+
+void APCWeaponBase::PlayWeaponRaiseSound()
+{
+	if (WeaponRaiseAudioComponent)
+	{
+		WeaponRaiseAudioComponent->Play();
+	}
+}
+
+void APCWeaponBase::PlayWeaponLowerSound()
+{
+	if (WeaponLowerAudioComponent)
+	{
+		WeaponLowerAudioComponent->Play();
+	}
 }

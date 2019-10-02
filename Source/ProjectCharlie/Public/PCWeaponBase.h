@@ -131,7 +131,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon Effects")
 	USoundCue* MagInsertSound;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon Effects")
+	USoundCue* WeaponRaiseSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon Effects")
+	USoundCue* WeaponLowerSound;
+
 	UAudioComponent* MagazineAudioComponent;
+	UAudioComponent* MagazineEjectAudioComponent;
+	UAudioComponent* MagazineInsertAudioComponent;
+	UAudioComponent* WeaponRaiseAudioComponent;
+	UAudioComponent* WeaponLowerAudioComponent;
 
 
 	// Shell eject effects
@@ -214,4 +224,9 @@ public:
 	TArray<EFiremode> GetFireModes();
 
 	APCMagazineBase* GetCurrentMagazine();
+
+	void PlayMagEjectSound();
+	void PlayMagInsertSound();
+	void PlayWeaponRaiseSound();
+	void PlayWeaponLowerSound();
 };
