@@ -65,7 +65,7 @@ APCPlayer::APCPlayer()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
+	
 	// Create the first person camera component
 	FPCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FPCamera"));
 	FPCamera->SetupAttachment(GetMesh(), TEXT("FPCameraSocket"));
@@ -146,15 +146,15 @@ void APCPlayer::SetupPlayerInputComponent(class UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &APCPlayer::StartSprint);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &APCPlayer::StopSprint);
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &APCPlayer::ToggleCrouch);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &APCPlayer::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &APCPlayer::StopJumping);
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("Turn", this, &APCPlayer::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("TurnRate", this, &APCPlayer::TurnAtRate);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &APCPlayer::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &APCPlayer::LookUpAtRate);
 
 	// handle touch devices
@@ -186,7 +186,7 @@ void APCPlayer::SetupPlayerInputComponent(class UInputComponent* PlayerInputComp
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &APCPlayer::BeginReload);
 
 	// Melee bindings
-	PlayerInputComponent->BindAction("EquipMelee", IE_Pressed, this, &APCPlayer::ToggleEquipMelee);
+	PlayerInputComponent->BindAction("Melee", IE_Pressed, this, &APCPlayer::StartMeleeAttack);
 
 	// Test for networking, leave for now
 	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &APCPlayer::TestFire);

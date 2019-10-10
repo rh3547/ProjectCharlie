@@ -13,6 +13,8 @@
 #include "TimerManager.h"
 #include "Animation/AnimInstance.h"
 #include "PCWeaponBase.h"
+#include "Sound/SoundCue.h"
+#include "Runtime/Engine/Public/EngineGlobals.h"
 
 //////////////////////////////////////////////////////////////////////////
 // APCCharacter
@@ -28,13 +30,14 @@ APCCharacter::APCCharacter()
 	MinNetUpdateFrequency = 15.0f;
 
 	bIsWeaponEquipped = false;
-	bIsRifleEquipped = false;
 	bIsSprinting = false;
+	bIsMeleeAttacking = false;
+	bIsReloading = false;
+	bIsEquipping = false;
 	bDoingSmoothAim = false;
 	bDoingSmoothStopAimWeapon = false;
 	bCanAim = false;
 	bCanFire = false;
-	bIsMeleeEquipped = false;
 	bIsDead = false;
 	bIsLeaningLeft = false;
 	bIsLeaningRight = false;
@@ -61,6 +64,41 @@ APCCharacter::APCCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
+
+	// Configure melee colliders
+	LeftMeleeCollider = CreateDefaultSubobject<UCapsuleComponent>(TEXT("LeftMeleeCollider"));
+	LeftMeleeCollider->InitCapsuleSize(7.0f, 14.0f);
+	LeftMeleeCollider->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);
+	LeftMeleeCollider->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);
+	LeftMeleeCollider->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Ignore);
+	LeftMeleeCollider->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel3, ECollisionResponse::ECR_Overlap);
+
+	LeftMeleeCollider->CanCharacterStepUpOn = ECB_No;
+	LeftMeleeCollider->SetShouldUpdatePhysicsVolume(false);
+	LeftMeleeCollider->SetCanEverAffectNavigation(false);
+	LeftMeleeCollider->bDynamicObstacle = false;
+	LeftMeleeCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	LeftMeleeCollider->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("LeftMelee"));
+	LeftMeleeCollider->SetRelativeLocation(FVector(-2.7f, -3.4f, 1.6f));
+	LeftMeleeCollider->SetRelativeRotation(FRotator(-68.4f, 77.6f, -77.3f));
+	LeftMeleeCollider->OnComponentBeginOverlap.AddDynamic(this, &APCCharacter::OnLeftMeleeCollide);
+
+	RightMeleeCollider = CreateDefaultSubobject<UCapsuleComponent>(TEXT("RightMeleeCollider"));
+	RightMeleeCollider->InitCapsuleSize(7.0f, 14.0f);
+	RightMeleeCollider->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);
+	RightMeleeCollider->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);
+	RightMeleeCollider->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Ignore);
+	RightMeleeCollider->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel3, ECollisionResponse::ECR_Overlap);
+
+	RightMeleeCollider->CanCharacterStepUpOn = ECB_No;
+	RightMeleeCollider->SetShouldUpdatePhysicsVolume(false);
+	RightMeleeCollider->SetCanEverAffectNavigation(false);
+	RightMeleeCollider->bDynamicObstacle = false;
+	RightMeleeCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	RightMeleeCollider->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("RightMelee"));
+	RightMeleeCollider->SetRelativeLocation(FVector(4.4f, 3.4f, -0.67f));
+	RightMeleeCollider->SetRelativeRotation(FRotator(-68.39f, 77.59f, -91.35f));
+	RightMeleeCollider->OnComponentBeginOverlap.AddDynamic(this, &APCCharacter::OnRightMeleeCollide);
 }
 
 /*
@@ -75,7 +113,7 @@ void APCCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	// Get the Player's Anim Instance and Set to Class Variable
-	//AnimInstance = GetMesh()->GetAnimInstance();
+	AnimInstance = GetMesh()->GetAnimInstance();
 
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 	GetCharacterMovement()->MaxWalkSpeedCrouched = MaxCrouchSpeed;
@@ -358,14 +396,19 @@ void APCCharacter::LocalToggleEquipWeapon()
 
 void APCCharacter::EquipWeapon(APCWeaponBase* Weapon)
 {
+	if (bIsAiming || bIsReloading || bIsMeleeAttacking || bIsEquipping)
+	{
+		return;
+	}
+
 	// Get the Player's Anim Instance and Set to Class Variable [Here to fix nullptr] - On Begin play sets to null for some reason
 	// TODO Fix cause its .bad.exe
 	AnimInstance = GetMesh()->GetAnimInstance();
 
 	bIsWeaponEquipped = true;
-	bIsRifleEquipped = true;
 	bCanAim = false;
 	bCanFire = false;
+	bIsEquipping = true;
 
 	CurrentWeapon = Weapon;
 
@@ -392,6 +435,7 @@ void APCCharacter::PostEquipWeapon()
 {
 	bCanAim = true;
 	bCanFire = true;
+	bIsEquipping = false;
 
 	if (CurrentWeapon)
 	{
@@ -407,10 +451,15 @@ void APCCharacter::TakeCurrentWeaponInHands()
 
 void APCCharacter::UnequipWeapon()
 {
+	if (bIsMeleeAttacking || bIsEquipping || bIsAiming || bIsReloading)
+	{
+		return;
+	}
+
 	bIsWeaponEquipped = false;
-	bIsRifleEquipped = false;
 	bCanAim = false;
 	bCanFire = false;
+	bIsEquipping = true;
 
 	if (CurrentWeapon)
 	{
@@ -428,14 +477,21 @@ void APCCharacter::PutCurrentWeaponInHolster()
 {
 	CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, CurrentWeapon->GetHolsterSocketName());
 	CurrentWeapon->SetZeroTransform();
+	bIsEquipping = false;
 }
 
 void APCCharacter::BeginReload()
 {
-	bCanFire = false;
+	if (bIsMeleeAttacking || bIsEquipping || bIsReloading)
+	{
+		return;
+	}
 	
 	if (CurrentWeapon)
 	{
+		bIsReloading = true;
+		bCanFire = false;
+
 		// Play the reload animation
 		if (AnimInstance)
 		{
@@ -468,6 +524,7 @@ void APCCharacter::FinishReload()
 {
 	CurrentWeapon->Reload();
 	bCanFire = true;
+	bIsReloading = false;
 }
 
 /*
@@ -478,7 +535,7 @@ void APCCharacter::FinishReload()
 */
 void APCCharacter::StartAim()
 {
-	if (bIsSprinting || !bCanAim || bWasJumping)
+	if (bIsSprinting || !bCanAim || bWasJumping || bIsMeleeAttacking)
 	{
 		return;
 	}
@@ -534,7 +591,7 @@ void APCCharacter::PostStopSmoothAim()
 */
 void APCCharacter::ChangeFiremode()
 {
-	if (CurrentWeapon)
+	if (CurrentWeapon && !bIsMeleeAttacking && !bIsReloading && !bIsEquipping)
 	{
 		CurrentWeapon->ChangeFiremode();
 	}
@@ -550,7 +607,7 @@ void APCCharacter::ChangeFiremode()
 */
 void APCCharacter::StartFire()
 {
-	if (!bIsWeaponEquipped || bIsSprinting || bWasJumping || !bCanFire)
+	if (!bIsWeaponEquipped || bIsSprinting || bWasJumping || !bCanFire || bIsMeleeAttacking || bIsReloading)
 	{
 		return;
 	}
@@ -578,38 +635,6 @@ void APCCharacter::StopFire()
 }
 
 /*
-	ToggleEquipMelee
-	======================================================================
-	Toggles melee mode. If no melee weapon is "owned", fists will be
-	used. If the character has a melee weapon, then that weapon will be
-	equipped.
-	======================================================================
-*/
-void APCCharacter::ToggleEquipMelee()
-{
-	if (bIsMeleeEquipped)
-	{
-		UnequipMelee();
-	}
-	else
-	{
-		EquipMelee();
-	}
-}
-
-void APCCharacter::EquipMelee()
-{
-	bIsMeleeEquipped = true;
-	bIsWeaponEquipped = false;
-	bIsRifleEquipped = false;
-}
-
-void APCCharacter::UnequipMelee()
-{
-	bIsMeleeEquipped = false;
-}
-
-/*
 	StartMeleeAttack
 	======================================================================
 	Start to perform a melee attack with the current melee weapon,
@@ -618,7 +643,21 @@ void APCCharacter::UnequipMelee()
 */
 void APCCharacter::StartMeleeAttack()
 {
+	if (bIsMeleeAttacking || bIsEquipping || bIsAiming || bIsReloading)
+	{
+		return;
+	}
 
+	bIsMeleeAttacking = true;
+
+	if (!bIsWeaponEquipped && AnimInstance)
+	{
+		AnimInstance->PlaySlotAnimationAsDynamicMontage(UnarmedMeleeAnimation, "UpperBody", 0.25f, 0.25f, 1.0f);
+	}
+	else if (CurrentWeapon && AnimInstance)
+	{
+		AnimInstance->PlaySlotAnimationAsDynamicMontage(CurrentWeapon->GetMeleeAnimation(), "UpperBody", 0.25f, 0.25f, 1.0f);
+	}
 }
 
 /*
@@ -628,8 +667,110 @@ void APCCharacter::StartMeleeAttack()
 	or fists.
 	======================================================================
 */
-void APCCharacter::StopMeleeAttack() {
+void APCCharacter::StopMeleeAttack()
+{
+	bIsMeleeAttacking = false;
+}
 
+/*
+	StartLeftMeleeHit
+	======================================================================
+	Start checking for actual melee hits for the left melee collider.
+	======================================================================
+*/
+void APCCharacter::StartLeftMeleeHit()
+{
+	LeftMeleeCollider->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+}
+
+/*
+	StopLeftMeleeHit
+	======================================================================
+	Stop checking for actual melee hits for the left melee collider.
+	======================================================================
+*/
+void APCCharacter::StopLeftMeleeHit()
+{
+	LeftMeleeCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+/*
+	OnLeftMeleeCollide
+	======================================================================
+	Called when the left melee collider overlaps an object.
+	======================================================================
+*/
+void APCCharacter::OnLeftMeleeCollide(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor != this)
+	{
+		APCCharacter::MeleeHitCast("LeftMelee");
+	}
+}
+
+/*
+	StartRightMeleeHit
+	======================================================================
+	Start checking for actual melee hits for the right melee collider.
+	======================================================================
+*/
+void APCCharacter::StartRightMeleeHit()
+{
+	RightMeleeCollider->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+}
+
+/*
+	StopRightMeleeHit
+	======================================================================
+	Stop checking for actual melee hits for the right melee collider.
+	======================================================================
+*/
+void APCCharacter::StopRightMeleeHit()
+{
+	RightMeleeCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+/*
+	OnRightMeleeCollide
+	======================================================================
+	Called when the right melee collider overlaps an object.
+	======================================================================
+*/
+void APCCharacter::OnRightMeleeCollide(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor != this)
+	{
+		APCCharacter::MeleeHitCast("RightMelee");
+	}
+}
+
+/*
+	MeleeHitCast
+	======================================================================
+	Perform an actual melee hit cast from the socket with the given name.
+	======================================================================
+*/
+void APCCharacter::MeleeHitCast(FName SocketName)
+{
+	FHitResult OutHit;
+	FVector Start = GetMesh()->GetSocketLocation(SocketName);
+	FRotator SocketRotation = GetMesh()->GetSocketRotation(SocketName);
+	float TraceDistance = 100.0f;
+	FVector End = SocketRotation.Add(0.0f, 150.0f, 0.0f).RotateVector(Start) * TraceDistance;
+	ECollisionChannel CollisionChannel = ECC_Visibility;
+	FCollisionQueryParams CollisionParams(FName("Melee Hit Trace"), false, this);
+
+	bool IsHit = GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, CollisionChannel, CollisionParams);
+
+	if (IsHit)
+	{
+		AActor* HitActor = Cast<AActor>(OutHit.Actor);
+		if (HitActor)
+		{
+			UAudioComponent* AudioComponent = UGameplayStatics::SpawnSoundAtLocation(this, MeleeHitSound, OutHit.ImpactPoint, FRotator::ZeroRotator, 1.0f, 1.0f, 0.0f, nullptr, nullptr, true);
+			UGameplayStatics::ApplyPointDamage(HitActor, 100.0f, GetActorForwardVector(), OutHit, nullptr, this, nullptr);
+		}
+	}
 }
 
 void APCCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {

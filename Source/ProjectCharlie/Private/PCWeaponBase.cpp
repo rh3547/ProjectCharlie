@@ -361,6 +361,11 @@ UAnimSequence* APCWeaponBase::GetReloadAnimation()
 	return ReloadAnimation;
 }
 
+UAnimSequence* APCWeaponBase::GetMeleeAnimation()
+{
+	return MeleeAnimation;
+}
+
 FName APCWeaponBase::GetHolsterSocketName()
 {
 	return HolsterSocketName;

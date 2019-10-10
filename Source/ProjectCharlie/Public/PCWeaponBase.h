@@ -100,6 +100,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Animations")
 	UAnimSequence* AutoFireAnimation;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Animations")
+	UAnimSequence* MeleeAnimation;
+
 
 	// Firing/Muzzle effects
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon Effects")
@@ -204,6 +207,7 @@ public:
 
 	UAnimSequence* GetEquipAnimation();
 	UAnimSequence* GetReloadAnimation();
+	UAnimSequence* GetMeleeAnimation();
 
 	void SetHipTransform();
 	void SetAimTransform();

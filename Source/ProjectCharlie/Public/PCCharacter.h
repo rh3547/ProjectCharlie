@@ -7,6 +7,8 @@
 #include "PCCharacter.generated.h"
 
 class APCWeaponBase;
+class UCapsuleComponent;
+class USoundCue;
 
 UCLASS()
 class PROJECTCHARLIE_API APCCharacter : public ACharacter
@@ -86,9 +88,6 @@ public:
 	bool bIsWeaponEquipped;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
-	bool bIsRifleEquipped;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	bool bCanAim;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
@@ -98,6 +97,12 @@ public:
 
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	bool bIsAiming;
+
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
+	bool bIsEquipping;
+
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
+	bool bIsReloading;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	bool bDoingSmoothAim;
@@ -136,8 +141,20 @@ public:
 		Melee Variables
 		----------------------------------------------------------------
 	*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Melee")
-	bool bIsMeleeEquipped;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Melee")
+	UAnimSequence* UnarmedMeleeAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Melee")
+	bool bIsMeleeAttacking;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Melee")
+	UCapsuleComponent* LeftMeleeCollider;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Melee")
+	UCapsuleComponent* RightMeleeCollider;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Melee")
+	USoundCue* MeleeHitSound;
 
 	/*
 		Other Variables
@@ -253,19 +270,32 @@ protected:
 		----------------------------------------------------------------
 	*/
 	UFUNCTION(BlueprintCallable)
-	virtual void ToggleEquipMelee();
-
-	UFUNCTION(BlueprintCallable)
-	virtual void EquipMelee();
-
-	UFUNCTION(BlueprintCallable)
-	virtual void UnequipMelee();
-
-	UFUNCTION(BlueprintCallable)
 	virtual void StartMeleeAttack();
 
 	UFUNCTION(BlueprintCallable)
 	virtual void StopMeleeAttack();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void StartLeftMeleeHit();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void StopLeftMeleeHit();
+
+	UFUNCTION()
+	virtual void OnLeftMeleeCollide(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void StartRightMeleeHit();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void StopRightMeleeHit();
+
+	UFUNCTION()
+	virtual void OnRightMeleeCollide(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	virtual void MeleeHitCast(FName SocketName);
+
 
 	/*
 		Other Functions
